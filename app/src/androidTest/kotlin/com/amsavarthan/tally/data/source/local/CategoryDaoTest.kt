@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
-internal class  CategoryDaoTest {
+internal class CategoryDaoTest {
 
     @get:Rule
     val hiltRule = HiltAndroidRule(this)

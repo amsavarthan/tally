@@ -2,10 +2,7 @@ package com.amsavarthan.tally.di
 
 import android.content.Context
 import androidx.room.Room
-import com.amsavarthan.tally.data.source.local.AccountDao
-import com.amsavarthan.tally.data.source.local.CategoryDao
 import com.amsavarthan.tally.data.source.local.TallyDatabase
-import com.amsavarthan.tally.data.source.local.TallyEntryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

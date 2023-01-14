@@ -25,18 +25,22 @@ interface AccountDao {
     @Query("SELECT * FROM account WHERE type == 'cash'")
     suspend fun getCashAccountEntity(): Account?
 
-    @Query("""
+    @Query(
+        """
         SELECT SUM(COALESCE(balance,0))
         FROM account
         WHERE type IN ("cash","debit card")
-    """)
+    """
+    )
     fun getOutstandingBalanceAmount(): Flow<Double>
 
-    @Query("""
+    @Query(
+        """
         SELECT SUM(COALESCE(balance,0))
         FROM account
         WHERE type IN ("credit card","pay later")
-    """)
+    """
+    )
     fun getOutstandingRepaymentAmount(): Flow<Double>
 
 }
