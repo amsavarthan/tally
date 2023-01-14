@@ -1,4 +1,4 @@
-package com.amsavarthan.tally.ui.theme
+package com.amsavarthan.tally.presentation.ui.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
