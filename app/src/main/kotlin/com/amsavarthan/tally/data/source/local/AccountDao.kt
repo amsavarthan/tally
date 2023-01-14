@@ -2,6 +2,7 @@ package com.amsavarthan.tally.data.source.local
 
 import androidx.room.*
 import com.amsavarthan.tally.domain.entity.Account
+import com.amsavarthan.tally.domain.entity.AccountType
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -23,7 +24,7 @@ interface AccountDao {
     suspend fun getAccountEntity(id: Long): Account
 
     @Query("SELECT * FROM account WHERE type == 'cash'")
-    suspend fun getCashAccountEntity(): Account?
+    fun getCashAccountEntity(): Flow<Account?>
 
     @Query(
         """
@@ -38,7 +39,7 @@ interface AccountDao {
         """
         SELECT SUM(COALESCE(balance,0))
         FROM account
-        WHERE type IN ("credit card","pay later")
+        WHERE type IN ("credit card","pay later account")
     """
     )
     fun getOutstandingRepaymentAmount(): Flow<Double>

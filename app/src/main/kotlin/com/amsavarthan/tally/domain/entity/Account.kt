@@ -44,6 +44,11 @@ sealed class AccountType(val title: String) : Parcelable {
     object CreditCard : AccountType("Credit Card")
     object PayLater : AccountType("Pay Later Account")
     companion object {
+
+        fun getAllAccountTypes() = listOf(
+            Cash, DebitCard, CreditCard, PayLater
+        )
+
         fun parse(title: String?): AccountType {
             return when (title?.lowercase()) {
                 Cash.title.lowercase() -> Cash

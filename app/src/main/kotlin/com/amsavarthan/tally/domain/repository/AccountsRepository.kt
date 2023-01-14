@@ -9,7 +9,7 @@ interface AccountsRepository {
 
     suspend fun getAccount(id: Long): Account
 
-    suspend fun getCashAccount(): Account?
+    fun getCashAccount(): Flow<Account?>
 
     suspend fun insertAccount(account: Account): Long
 
