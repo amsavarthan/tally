@@ -18,6 +18,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -85,7 +87,7 @@ fun TallyManageAccountScreen(
 
 
     LaunchedEffect(key1 = true) {
-        viewModel.eventFlow.collectLatest { event ->
+        viewModel.events.collectLatest { event ->
             when (event) {
                 ManageAccountViewModel.UiEvent.NavigateBack -> {
                     navigator.navigateUp()
@@ -105,7 +107,7 @@ fun TallyManageAccountScreen(
                 viewModel.onEvent(TallyManageAccountScreenEvent.ToggleUnsavedChangesAlertDialog())
             },
             confirmButton = {
-                Button(onClick = {
+                TextButton(onClick = {
                     viewModel.onEvent(TallyManageAccountScreenEvent.ToggleUnsavedChangesAlertDialog())
                 }) {
                     Text(text = "Stay")
@@ -130,7 +132,7 @@ fun TallyManageAccountScreen(
                 viewModel.onEvent(TallyManageAccountScreenEvent.ToggleDeleteConfirmationAlertDialog())
             },
             confirmButton = {
-                Button(onClick = {
+                TextButton(onClick = {
                     viewModel.onEvent(TallyManageAccountScreenEvent.OnDeleteClicked)
                 }) {
                     Text(text = "Delete")
@@ -209,6 +211,9 @@ fun TallyManageAccountScreen(
                     viewModel.onEvent(
                         TallyManageAccountScreenEvent.OnAccountBalanceEntered(balance = amount)
                     )
+                },
+                onDone = {
+                    viewModel.onEvent(TallyManageAccountScreenEvent.OnActionButtonClicked)
                 }
             )
             AccountType.DebitCard -> AddEditDebitCardLayout(
@@ -280,12 +285,23 @@ fun TallyManageAccountScreen(
 
 @Composable
 private fun EditCashAccountLayout(
-    amount: Double,
+    amount: String,
     onAmountChanged: (String) -> Unit,
+    onDone: () -> Unit,
 ) {
+    val focusRequester = remember {
+        FocusRequester()
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
     TallyCurrencyTextField(
+        modifier = Modifier.focusRequester(focusRequester),
         value = amount,
-        onValueChange = onAmountChanged
+        onValueChange = onAmountChanged,
+        onImeDone = onDone
     )
 }
 

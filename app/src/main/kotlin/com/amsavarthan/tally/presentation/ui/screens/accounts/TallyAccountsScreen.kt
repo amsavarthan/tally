@@ -1,5 +1,7 @@
 package com.amsavarthan.tally.presentation.ui.screens.accounts
 
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -96,11 +98,6 @@ fun TallyAccountsScreen(
                         style = MaterialTheme.typography.h4,
                         fontWeight = FontWeight.Medium,
                     )
-                    Text(
-                        text = "Manage all your ${accountType.title.lowercase()}$suffixForPlural here.",
-                        style = MaterialTheme.typography.h6,
-                        fontWeight = FontWeight.Normal,
-                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -138,4 +135,5 @@ fun TallyAccountsScreen(
             }
         }
     }
+
 }

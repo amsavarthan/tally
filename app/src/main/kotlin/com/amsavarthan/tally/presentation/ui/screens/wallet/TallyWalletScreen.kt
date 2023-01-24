@@ -1,5 +1,6 @@
 package com.amsavarthan.tally.presentation.ui.screens.wallet
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -8,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -16,11 +16,10 @@ import com.amsavarthan.tally.domain.entity.AccountType
 import com.amsavarthan.tally.presentation.ui.components.AccountItem
 import com.amsavarthan.tally.presentation.ui.components.SummaryItem
 import com.amsavarthan.tally.presentation.ui.components.TallyAppBar
-import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageAccountScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyAccountsScreenDestination
+import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageAccountScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import java.text.DecimalFormat
 
 @Destination
 @Composable
@@ -62,20 +61,17 @@ fun TallyWalletScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                val formatter = remember {
-                    DecimalFormat("0.00")
-                }
                 SummaryItem(
                     label = "Cash Holdings",
-                    value = formatter.format(walletAmountDetails.cashHoldings)
+                    value = walletAmountDetails.cashHoldings
                 )
                 SummaryItem(
                     label = "Outstanding Balance",
-                    value = formatter.format(walletAmountDetails.outstandingBalance)
+                    value = walletAmountDetails.outstandingBalance
                 )
                 SummaryItem(
                     label = "Repayment Amount",
-                    value = formatter.format(walletAmountDetails.repaymentAmount)
+                    value = walletAmountDetails.repaymentAmount
                 )
             }
 
@@ -113,5 +109,6 @@ fun TallyWalletScreen(
             }
         }
     }
+
 
 }

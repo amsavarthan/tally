@@ -10,8 +10,7 @@ import com.amsavarthan.tally.domain.entity.AccountType
 import com.amsavarthan.tally.domain.usecase.GetAccountsByTypeUseCase
 import com.amsavarthan.tally.presentation.ui.screens.navArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,9 +30,9 @@ class AccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getAccountsByTypeUseCase(accountType).onEach { accounts ->
+            getAccountsByTypeUseCase(accountType).collectLatest { accounts ->
                 uiState = uiState.copy(accounts = accounts)
-            }.collect()
+            }
         }
     }
 

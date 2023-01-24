@@ -12,6 +12,9 @@ import com.amsavarthan.tally.domain.entity.TallyOnBoardingStep
 import com.amsavarthan.tally.domain.repository.AccountsRepository
 import com.amsavarthan.tally.domain.repository.AppDataRepository
 import com.amsavarthan.tally.domain.usecase.*
+import com.amsavarthan.tally.domain.utils.CurrencyFormatter
+import com.amsavarthan.tally.domain.utils.MAX_AMOUNT_LIMIT
+import com.amsavarthan.tally.domain.utils.toCurrencyInt
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -30,24 +33,21 @@ class OnBoardingScreenViewModel @Inject constructor(
     var uiState by savedStateHandle.saveable { mutableStateOf(TallyOnBoardingScreenState()) }
         private set
 
-    private val _eventFlow = MutableSharedFlow<UiEvent>()
-    val eventFlow = _eventFlow.asSharedFlow()
+    private val _events = MutableSharedFlow<UiEvent>()
+    val events = _events.asSharedFlow()
 
     init {
         viewModelScope.launch {
-            accountsRepository.getAccounts().onEach { accounts ->
+            accountsRepository.getAccounts().collectLatest { accounts ->
                 uiState = uiState.copy(accounts = accounts)
-            }.collect()
+            }
         }
     }
 
     init {
         viewModelScope.launch {
-            accountsRepository.getCashAccount().onEach { cashAccount ->
-                if (cashAccount != null) {
-                    uiState = uiState.copy(cashAccountId = cashAccount.id)
-                    return@onEach
-                }
+            val cashAccount = accountsRepository.getCashAccount().first()
+            val cashAccountId = if (cashAccount != null) cashAccount.id else {
                 accountsRepository.insertAccount(
                     Account(
                         name = AccountType.Cash.title,
@@ -55,19 +55,22 @@ class OnBoardingScreenViewModel @Inject constructor(
                         balance = 0.0,
                     )
                 )
-            }.collect()
+            }
+            uiState = uiState.copy(
+                cashAccountId = cashAccountId,
+                cashAmount = CurrencyFormatter(cashAccount?.balance ?: 0.0)
+            )
         }
     }
 
     init {
         viewModelScope.launch {
-            getWalletAmountDetailUseCase().onEach { walletDetails ->
+            getWalletAmountDetailUseCase().collectLatest { walletDetails ->
                 uiState = uiState.copy(
                     outstandingBalance = walletDetails.outstandingBalance,
                     repaymentAmount = walletDetails.repaymentAmount,
-                    cashAmount = walletDetails.cashHoldings
                 )
-            }.collect()
+            }
         }
     }
 
@@ -76,8 +79,8 @@ class OnBoardingScreenViewModel @Inject constructor(
             TallyOnBoardingScreenEvent.OnActionButtonClicked -> {
                 viewModelScope.launch {
                     if (TallyOnBoardingStep.isLastStep(uiState.stepNumber)) {
-                        appDataRepository.updateOnBoardingState(hasOnBoarded = true)
-                        _eventFlow.emit(UiEvent.NavigateToDashboard)
+                        appDataRepository.setOnBoardingState(hasOnBoarded = true)
+                        _events.emit(UiEvent.NavigateToDashboard)
                         return@launch
                     }
                     goForward()
@@ -86,8 +89,13 @@ class OnBoardingScreenViewModel @Inject constructor(
             TallyOnBoardingScreenEvent.OnBackPressed -> goBack()
             is TallyOnBoardingScreenEvent.OnCashAmountEntered -> {
                 viewModelScope.launch {
-                    val amountAsDouble = event.amount.toDoubleOrNull() ?: return@launch
-                    updateCashAccountBalanceUseCase(uiState.cashAccountId, amountAsDouble)
+                    val amount = event.amount.toCurrencyInt() ?: return@launch
+                    if (amount > MAX_AMOUNT_LIMIT) {
+                        _events.emit(UiEvent.ShowToast("Value cannot be more than ₹1,00,00,000"))
+                        return@launch
+                    }
+                    uiState = uiState.copy(cashAmount = event.amount)
+                    updateCashAccountBalanceUseCase(uiState.cashAccountId, amount)
                 }
             }
         }
@@ -101,8 +109,9 @@ class OnBoardingScreenViewModel @Inject constructor(
         uiState = uiState.copy(stepNumber = uiState.stepNumber.dec())
     }
 
-    sealed class UiEvent {
-        object NavigateToDashboard : UiEvent()
+    sealed interface UiEvent {
+        data class ShowToast(val message: String) : UiEvent
+        object NavigateToDashboard : UiEvent
     }
 
 }

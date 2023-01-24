@@ -11,7 +11,7 @@ data class TallyAddEditAccountScreenState(
     val debitCardDetails: DebitCardDetails = DebitCardDetails(),
     val creditCardDetails: CreditDetails = CreditDetails(),
     val payLaterAccountDetails: CreditDetails = CreditDetails(),
-    val cashAmount: Double = 0.0,
+    val cashAmount: String = "",
     val hasDataChanged: Boolean = false,
     val shouldShowUnsavedChangesAlert: Boolean = false,
     val shouldShowDeleteConfirmationAlert: Boolean = false,
@@ -20,13 +20,13 @@ data class TallyAddEditAccountScreenState(
 @Parcelize
 data class DebitCardDetails(
     val name: String = "",
-    val outstandingBalance: Double = 0.0,
+    val outstandingBalance: String = "",
 ) : Parcelable
 
 fun DebitCardDetails.toAccount(): Account {
     return Account(
         name = name,
-        balance = outstandingBalance,
+        balance = if (outstandingBalance.isEmpty()) 0.0 else outstandingBalance.toDouble(),
         type = AccountType.DebitCard
     )
 }
@@ -34,15 +34,15 @@ fun DebitCardDetails.toAccount(): Account {
 @Parcelize
 data class CreditDetails(
     val name: String = "",
-    val creditLimit: Double = 0.0,
-    val outstandingAmount: Double = 0.0,
+    val creditLimit: String = "",
+    val outstandingAmount: String = "",
 ) : Parcelable
 
 fun CreditDetails.toAccount(type: AccountType): Account {
     return Account(
         name = name,
-        balance = outstandingAmount,
-        limit = creditLimit,
+        balance = if (outstandingAmount.isEmpty()) 0.0 else outstandingAmount.toDouble(),
+        limit = creditLimit.toDouble(),
         type = type
     )
 }

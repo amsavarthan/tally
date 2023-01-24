@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -24,7 +23,7 @@ fun SummaryItem(
         )
         Text(
             text = "₹$value",
-            style = TextStyle.Default.copy(fontSize = 30.sp)
+            fontSize = 30.sp
         )
     }
 }

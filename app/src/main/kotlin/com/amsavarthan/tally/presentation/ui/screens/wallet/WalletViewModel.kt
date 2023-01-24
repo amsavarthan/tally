@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.amsavarthan.tally.domain.usecase.GetWalletAmountDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,9 +26,9 @@ class WalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getWalletAmountDetailUseCase().onEach { walletDetails ->
+            getWalletAmountDetailUseCase().collectLatest { walletDetails ->
                 uiState = uiState.copy(walletAmountDetail = walletDetails)
-            }.collect()
+            }
         }
     }
 

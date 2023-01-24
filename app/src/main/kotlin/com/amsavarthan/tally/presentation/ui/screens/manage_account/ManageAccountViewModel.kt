@@ -9,12 +9,12 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.amsavarthan.tally.domain.entity.AccountType
 import com.amsavarthan.tally.domain.repository.AccountsRepository
 import com.amsavarthan.tally.domain.usecase.UpdateCashAccountBalanceUseCase
+import com.amsavarthan.tally.domain.utils.CurrencyFormatter
+import com.amsavarthan.tally.domain.utils.MAX_AMOUNT_LIMIT
+import com.amsavarthan.tally.domain.utils.toCurrencyInt
 import com.amsavarthan.tally.presentation.ui.screens.navArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,20 +38,17 @@ class ManageAccountViewModel @Inject constructor(
     }
         private set
 
-    private val _eventFlow = MutableSharedFlow<UiEvent>()
-    val eventFlow = _eventFlow.asSharedFlow()
+    private val _events = MutableSharedFlow<UiEvent>()
+    val events = _events.asSharedFlow()
 
     init {
         viewModelScope.launch {
             if (accountType != AccountType.Cash) return@launch
-
-            accountsRepository.getCashAccount().onEach { cashAccount ->
-                if (cashAccount == null) return@onEach
-                uiState = uiState.copy(
-                    accountId = cashAccount.id,
-                    cashAmount = cashAccount.balance
-                )
-            }.collect()
+            val cashAccount = accountsRepository.getCashAccount().first() ?: return@launch
+            uiState = uiState.copy(
+                accountId = cashAccount.id,
+                cashAmount = CurrencyFormatter(cashAccount.balance)
+            )
         }
     }
 
@@ -65,21 +62,21 @@ class ManageAccountViewModel @Inject constructor(
                 AccountType.DebitCard -> uiState.copy(
                     debitCardDetails = DebitCardDetails(
                         name = account.name,
-                        outstandingBalance = account.balance,
+                        outstandingBalance = CurrencyFormatter(account.balance),
                     )
                 )
                 AccountType.CreditCard -> uiState.copy(
                     creditCardDetails = CreditDetails(
                         name = account.name,
-                        outstandingAmount = account.balance,
-                        creditLimit = account.limit
+                        outstandingAmount = CurrencyFormatter(account.balance),
+                        creditLimit = CurrencyFormatter(account.limit)
                     )
                 )
                 AccountType.PayLater -> uiState.copy(
                     payLaterAccountDetails = CreditDetails(
                         name = account.name,
-                        outstandingAmount = account.balance,
-                        creditLimit = account.limit
+                        outstandingAmount = CurrencyFormatter(account.balance),
+                        creditLimit = CurrencyFormatter(account.limit)
                     )
                 )
                 AccountType.Cash -> uiState
@@ -118,11 +115,16 @@ class ManageAccountViewModel @Inject constructor(
                 AccountType.CreditCard -> uiState.creditCardDetails.toAccount(accountType)
                 AccountType.DebitCard -> uiState.debitCardDetails.toAccount()
                 AccountType.PayLater -> uiState.payLaterAccountDetails.toAccount(accountType)
-                else -> null
-            }?.copy(id = uiState.accountId) ?: return@launch
+                else ->null
+            }?.copy(id = uiState.accountId)
+
+            if (account == null) {
+                _events.emit(UiEvent.NavigateBack)
+                return@launch
+            }
 
             if (!account.isValid()) {
-                _eventFlow.emit(UiEvent.ShowToast("Invalid ${accountType.title} details"))
+                _events.emit(UiEvent.ShowToast("Invalid ${accountType.title} details"))
                 return@launch
             }
 
@@ -134,7 +136,7 @@ class ManageAccountViewModel @Inject constructor(
             }
 
             uiState = uiState.copy(hasDataChanged = false)
-            _eventFlow.emit(UiEvent.NavigateBack)
+            _events.emit(UiEvent.NavigateBack)
         }
     }
 
@@ -143,38 +145,44 @@ class ManageAccountViewModel @Inject constructor(
             uiState = uiState.copy(shouldShowDeleteConfirmationAlert = false)
             val account = accountsRepository.getAccount(uiState.accountId!!)
             accountsRepository.deleteAccount(account)
-            _eventFlow.emit(UiEvent.NavigateBack)
+            _events.emit(UiEvent.NavigateBack)
         }
     }
 
     private fun updateAccountBalanceAmount(balance: String) {
         viewModelScope.launch {
-            val amountAsDouble = balance.toDoubleOrNull() ?: return@launch
-            uiState = uiState.copy(hasDataChanged = accountType != AccountType.Cash)
+            val balanceAsInt = balance.toCurrencyInt() ?: return@launch
+            if (balanceAsInt > MAX_AMOUNT_LIMIT) {
+                viewModelScope.launch {
+                    _events.emit(UiEvent.ShowToast("Value cannot be more than ₹1,00,00,000"))
+                }
+                return@launch
+            }
 
+            uiState = uiState.copy(hasDataChanged = accountType != AccountType.Cash)
             when (accountType) {
                 AccountType.Cash -> {
-                    uiState = uiState.copy(cashAmount = amountAsDouble)
-                    updateCashAccountBalanceUseCase(uiState.accountId, amountAsDouble)
+                    uiState = uiState.copy(cashAmount = balance)
+                    updateCashAccountBalanceUseCase(uiState.accountId, balanceAsInt)
                 }
                 AccountType.CreditCard -> {
                     uiState = uiState.copy(
                         creditCardDetails = uiState.creditCardDetails.copy(
-                            outstandingAmount = amountAsDouble,
+                            outstandingAmount = balance,
                         )
                     )
                 }
                 AccountType.DebitCard -> {
                     uiState = uiState.copy(
                         debitCardDetails = uiState.debitCardDetails.copy(
-                            outstandingBalance = amountAsDouble,
+                            outstandingBalance = balance,
                         )
                     )
                 }
                 AccountType.PayLater -> {
                     uiState = uiState.copy(
                         payLaterAccountDetails = uiState.payLaterAccountDetails.copy(
-                            outstandingAmount = amountAsDouble,
+                            outstandingAmount = balance,
                         )
                     )
                 }
@@ -207,26 +215,32 @@ class ManageAccountViewModel @Inject constructor(
     }
 
     private fun updateAccountLimit(limit: String) {
-        val limitAsDouble = limit.toDoubleOrNull() ?: return
+        if ((limit.toCurrencyInt() ?: return) > MAX_AMOUNT_LIMIT) {
+            viewModelScope.launch {
+                _events.emit(UiEvent.ShowToast("Value cannot be more than ₹1,00,00,000"))
+            }
+            return
+        }
+
         uiState = when (accountType) {
             AccountType.CreditCard -> uiState.copy(
                 hasDataChanged = true,
                 creditCardDetails = uiState.creditCardDetails.copy(
-                    creditLimit = limitAsDouble,
+                    creditLimit = limit,
                 )
             )
             AccountType.PayLater -> uiState.copy(
                 hasDataChanged = true,
                 payLaterAccountDetails = uiState.payLaterAccountDetails.copy(
-                    creditLimit = limitAsDouble,
+                    creditLimit = limit,
                 )
             )
             AccountType.DebitCard, AccountType.Cash -> uiState
         }
     }
 
-    sealed class UiEvent {
-        data class ShowToast(val message: String) : UiEvent()
-        object NavigateBack : UiEvent()
+    sealed interface UiEvent {
+        data class ShowToast(val message: String) : UiEvent
+        object NavigateBack : UiEvent
     }
 }

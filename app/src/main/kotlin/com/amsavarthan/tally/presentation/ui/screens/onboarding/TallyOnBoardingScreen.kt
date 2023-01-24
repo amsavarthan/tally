@@ -1,11 +1,15 @@
 package com.amsavarthan.tally.presentation.ui.screens.onboarding
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.amsavarthan.tally.domain.entity.Account
@@ -22,7 +26,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
 import kotlinx.coroutines.flow.collectLatest
-import java.text.DecimalFormat
 
 @Destination
 @Composable
@@ -36,9 +39,14 @@ fun TallyOnBoardingScreen(
         TallyOnBoardingStep.getStepByNumber(uiState.stepNumber)
     }
 
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
-        viewModel.eventFlow.collectLatest { event ->
+        viewModel.events.collectLatest { event ->
             when (event) {
+                is OnBoardingScreenViewModel.UiEvent.ShowToast -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
                 OnBoardingScreenViewModel.UiEvent.NavigateToDashboard -> {
                     navigator.navigate(DashboardScreenDestination) {
                         launchSingleTop = true
@@ -61,6 +69,9 @@ fun TallyOnBoardingScreen(
                 amount = uiState.cashAmount,
                 onAmountChange = { amount ->
                     viewModel.onEvent(TallyOnBoardingScreenEvent.OnCashAmountEntered(amount = amount))
+                },
+                onDone = {
+                    viewModel.onEvent(TallyOnBoardingScreenEvent.OnActionButtonClicked)
                 }
             )
             TallyOnBoardingStep.DebitCardSetup -> OnBoardingAccountsSetupLayout(
@@ -94,13 +105,9 @@ fun TallyOnBoardingScreen(
 
 @Composable
 private fun OnBoardingSummaryLayout(
-    outstandingBalance: Double,
-    repaymentAmount: Double,
+    outstandingBalance: String,
+    repaymentAmount: String,
 ) {
-    val formatter = remember {
-        DecimalFormat("0.00")
-    }
-
     Column(
         modifier = Modifier.padding(top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -108,12 +115,12 @@ private fun OnBoardingSummaryLayout(
 
         SummaryItem(
             label = "Outstanding Balance",
-            value = formatter.format(outstandingBalance)
+            value = outstandingBalance
         )
 
         SummaryItem(
             label = "Repayment Amount",
-            value = formatter.format(repaymentAmount)
+            value = repaymentAmount
         )
     }
 }
@@ -121,12 +128,24 @@ private fun OnBoardingSummaryLayout(
 
 @Composable
 private fun OnBoardingCashSetupLayout(
-    amount: Double,
+    amount: String,
     onAmountChange: (String) -> Unit,
+    onDone: () -> Unit,
 ) {
+
+    val focusRequester = remember {
+        FocusRequester()
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
     TallyCurrencyTextField(
+        modifier = Modifier.focusRequester(focusRequester),
         value = amount,
-        onValueChange = onAmountChange
+        onValueChange = onAmountChange,
+        onImeDone = onDone
     )
 }
 

@@ -5,25 +5,30 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.amsavarthan.tally.domain.utils.CurrencyFilter
 import com.amsavarthan.tally.presentation.ui.theme.Gray
-import java.text.DecimalFormat
+import com.amsavarthan.tally.presentation.ui.theme.fonts
 
 @Composable
 fun TallyCurrencyTextField(
     modifier: Modifier = Modifier,
     label: String = "",
-    value: Double,
+    value: String,
     onValueChange: (String) -> Unit,
+    onImeDone: () -> Unit = {},
 ) {
     Column(
         modifier = modifier,
@@ -36,19 +41,33 @@ fun TallyCurrencyTextField(
             )
         }
         BasicTextField(
-            value = if (value == 0.0) "" else DecimalFormat("0.00").format(value),
-            onValueChange = { rawText ->
-                onValueChange.invoke(CurrencyFilter(rawText))
+            value = TextFieldValue(text = value, selection = TextRange(value.length)),
+            onValueChange = { fieldValue ->
+                onValueChange.invoke(fieldValue.text)
             },
-            textStyle = TextStyle.Default.copy(fontSize = 30.sp),
+            textStyle = TextStyle.Default.copy(fontSize = 30.sp, fontFamily = fonts),
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardActions = KeyboardActions(onDone = { onImeDone() }),
             decorationBox = { innerTextField ->
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(text = "₹", color = MaterialTheme.colors.onBackground, fontSize = 30.sp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "₹",
+                        color = MaterialTheme.colors.onBackground,
+                        fontFamily = fonts,
+                        fontSize = 30.sp
+                    )
                     Box {
-                        if (value == 0.0) {
-                            Text(text = "0.00", color = Gray, fontSize = 30.sp)
+                        if (value.isBlank()) {
+                            Text(
+                                text = "0.00",
+                                color = Gray,
+                                fontFamily = fonts,
+                                fontSize = 30.sp
+                            )
                         }
                         innerTextField()
                     }
@@ -80,15 +99,26 @@ fun TallyTextField(
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle.Default.copy(fontSize = 30.sp),
+            textStyle = TextStyle.Default.copy(fontSize = 30.sp, fontFamily = fonts),
             singleLine = true,
             enabled = enabled,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Words
+            ),
             decorationBox = { innerTextField ->
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Box {
                         if (value.isBlank()) {
-                            Text(text = placeholder, color = Gray, fontSize = 30.sp)
+                            Text(
+                                text = placeholder,
+                                color = Gray,
+                                fontSize = 30.sp,
+                                fontFamily = fonts,
+                            )
                         }
                         innerTextField()
                     }
