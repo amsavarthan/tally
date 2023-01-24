@@ -26,6 +26,7 @@ import com.amsavarthan.tally.presentation.ui.components.TallyAppBar
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageAccountScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageCategoryScreenDestination
 import com.amsavarthan.tally.presentation.ui.theme.LightGray
+import com.amsavarthan.tally.presentation.utils.ContentDescription
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
@@ -64,7 +65,7 @@ fun TallyChooserScreen(
                     IconButton(onClick = resultNavigator::navigateBack) {
                         Icon(
                             imageVector = Icons.Outlined.ArrowBack,
-                            contentDescription = "button_back"
+                            contentDescription = ContentDescription.buttonBack
                         )
                     }
                 }
@@ -263,7 +264,8 @@ private fun ChooserTitleItem(
         if (onAddButtonClicked != null) {
             IconButton(onClick = onAddButtonClicked) {
                 Icon(
-                    imageVector = Icons.Outlined.Add, contentDescription = "button_add"
+                    imageVector = Icons.Outlined.Add,
+                    contentDescription =ContentDescription.buttonAdd
                 )
             }
         }

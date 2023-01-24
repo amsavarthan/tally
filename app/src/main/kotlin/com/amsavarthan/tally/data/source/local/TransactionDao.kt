@@ -13,9 +13,6 @@ interface TransactionDao {
     @Delete
     suspend fun deleteEntry(transaction: Transaction)
 
-    @Update
-    suspend fun updateEntry(transaction: Transaction)
-
     @Query("SELECT * FROM entry ORDER BY datetime(date_time) DESC")
     fun getTransactionEntries(): Flow<List<Transaction>>
 

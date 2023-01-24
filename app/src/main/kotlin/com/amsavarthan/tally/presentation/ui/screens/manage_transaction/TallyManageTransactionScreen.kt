@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.twotone.AccountBalanceWallet
 import androidx.compose.material.icons.twotone.ArrowRightAlt
 import androidx.compose.runtime.*
@@ -38,13 +39,13 @@ import com.amsavarthan.tally.presentation.ui.screens.manage_transaction.componen
 import com.amsavarthan.tally.presentation.ui.screens.manage_transaction.components.TallyKeyPad
 import com.amsavarthan.tally.presentation.ui.theme.Gray
 import com.amsavarthan.tally.presentation.ui.theme.LightGray
+import com.amsavarthan.tally.presentation.utils.ContentDescription
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 
 data class TallyManageTransactionScreenNavArgs(
     val transactionId: Long? = null,
@@ -61,7 +62,7 @@ fun TallyManageTransactionScreen(
     viewModel: ManageTransactionScreenViewModel = hiltViewModel(),
 ) {
 
-    val uiState = viewModel.uiState
+    val (transactionDetails, shouldShowDeleteConfirmationAlertDialog) = viewModel.uiState
     val context = LocalContext.current
 
     resultRecipient.onNavResult { result ->
@@ -86,6 +87,30 @@ fun TallyManageTransactionScreen(
         }
     }
 
+    if (shouldShowDeleteConfirmationAlertDialog) {
+        AlertDialog(
+            title = { Text(text = "Remove transaction") },
+            text = { Text(text = "Are you sure do you want to remove this transaction?") },
+            onDismissRequest = {
+                viewModel.onEvent(TallyManageTransactionScreenEvent.ToggleDeleteConfirmationAlertDialog())
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onEvent(TallyManageTransactionScreenEvent.OnDeleteConfirmation)
+                }) {
+                    Text(text = "Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.onEvent(TallyManageTransactionScreenEvent.ToggleDeleteConfirmationAlertDialog())
+                }) {
+                    Text(text = "Keep")
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = Modifier.statusBarsPadding(),
         topBar = {
@@ -95,8 +120,28 @@ fun TallyManageTransactionScreen(
                     IconButton(onClick = navigator::navigateUp) {
                         Icon(
                             imageVector = Icons.Outlined.ArrowBack,
-                            contentDescription = "button_back"
+                            contentDescription = ContentDescription.buttonBack
                         )
+                    }
+                },
+                actions = {
+                    if (transactionDetails.transactionId != null) {
+                        IconButton(
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            onClick = {
+                                viewModel.onEvent(
+                                    TallyManageTransactionScreenEvent.ToggleDeleteConfirmationAlertDialog(
+                                        showDialog = true
+                                    )
+                                )
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = ContentDescription.buttonDelete,
+                                tint = MaterialTheme.colors.onBackground
+                            )
+                        }
                     }
                 }
             )
@@ -146,8 +191,8 @@ fun TallyManageTransactionScreen(
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = uiState.amount.ifBlank { "0.00" },
-                            color = if (uiState.amount.isBlank()) Gray else MaterialTheme.colors.onBackground,
+                            text = transactionDetails.amount.ifBlank { "0.00" },
+                            color = if (transactionDetails.amount.isBlank()) Gray else MaterialTheme.colors.onBackground,
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -155,7 +200,7 @@ fun TallyManageTransactionScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
                     TallyDatePicker(
-                        date = uiState.localDateTime.date,
+                        date = transactionDetails.localDateTime.date,
                         onDatePicked = { dateTime ->
                             viewModel.onEvent(
                                 TallyManageTransactionScreenEvent.OnDateChanged(
@@ -181,12 +226,12 @@ fun TallyManageTransactionScreen(
                             .weight(1f)
                             .fillMaxHeight(),
                         icon = Icons.TwoTone.AccountBalanceWallet,
-                        value = uiState.account?.name ?: "Source",
+                        value = transactionDetails.account?.name ?: "Source",
                         onClick = {
                             navigator.navigate(
                                 TallyChooserScreenDestination(
                                     type = ChooserType.Account,
-                                    selectedId = uiState.account?.id
+                                    selectedId = transactionDetails.account?.id
                                 )
                             ) {
                                 launchSingleTop = true
@@ -195,7 +240,7 @@ fun TallyManageTransactionScreen(
                     )
 
                     val degree by animateFloatAsState(
-                        targetValue = if (uiState.category?.type == CategoryType.Income) 180f else 0f,
+                        targetValue = if (transactionDetails.category?.type == CategoryType.Income) 180f else 0f,
                         animationSpec = tween(delayMillis = 200)
                     )
 
@@ -210,13 +255,13 @@ fun TallyManageTransactionScreen(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight(),
-                        emoji = uiState.category?.emoji ?: "💸",
-                        value = uiState.category?.name ?: "Reason",
+                        emoji = transactionDetails.category?.emoji ?: "💸",
+                        value = transactionDetails.category?.name ?: "Reason",
                         onClick = {
                             navigator.navigate(
                                 TallyChooserScreenDestination(
                                     type = ChooserType.Category,
-                                    selectedId = uiState.category?.id
+                                    selectedId = transactionDetails.category?.id
                                 )
                             ) {
                                 launchSingleTop = true

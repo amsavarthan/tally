@@ -7,8 +7,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.amsavarthan.tally.domain.entity.TallyKeyPadItem
+import com.amsavarthan.tally.domain.entity.toTransaction
 import com.amsavarthan.tally.domain.repository.AccountsRepository
 import com.amsavarthan.tally.domain.repository.CategoryRepository
+import com.amsavarthan.tally.domain.repository.TransactionRepository
 import com.amsavarthan.tally.domain.usecase.AddOrUpdateTransactionUseCase
 import com.amsavarthan.tally.domain.usecase.GetTransactionDetailsUseCase
 import com.amsavarthan.tally.domain.utils.MAX_AMOUNT_LIMIT
@@ -27,6 +29,7 @@ class ManageTransactionScreenViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val accountsRepository: AccountsRepository,
     private val categoryRepository: CategoryRepository,
+    private val transactionRepository: TransactionRepository,
     private val addOrUpdateTransactionUseCase: AddOrUpdateTransactionUseCase,
     getTransactionDetailsUseCase: GetTransactionDetailsUseCase,
 ) : ViewModel() {
@@ -42,7 +45,9 @@ class ManageTransactionScreenViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            uiState = getTransactionDetailsUseCase(navArgs.transactionId)
+            uiState = uiState.copy(
+                transactionDetail = getTransactionDetailsUseCase(navArgs.transactionId)
+            )
         }
     }
 
@@ -66,17 +71,19 @@ class ManageTransactionScreenViewModel @Inject constructor(
             }
             is TallyManageTransactionScreenEvent.OnKeyPadKeyLongPressed -> {
                 if (event.key != TallyKeyPadItem.KeyBackspace) return
-                uiState = uiState.copy(amount = "")
+                val updatedDetails = uiState.transactionDetail.copy(amount = "")
+                uiState = uiState.copy(transactionDetail = updatedDetails)
             }
             is TallyManageTransactionScreenEvent.OnDateChanged -> {
-                uiState = uiState.copy(localDateTime = event.dateTime)
+                val updatedDetails = uiState.transactionDetail.copy(localDateTime = event.dateTime)
+                uiState = uiState.copy(transactionDetail = updatedDetails)
+            }
+            is TallyManageTransactionScreenEvent.ToggleDeleteConfirmationAlertDialog -> {
+                uiState = uiState.copy(shouldShowDeleteConfirmationAlertDialog = event.showDialog)
             }
             TallyManageTransactionScreenEvent.OnSaveButtonClicked -> {
                 viewModelScope.launch {
-                    val (isSuccess, reason) = addOrUpdateTransactionUseCase(
-                        id = navArgs.transactionId,
-                        transactionDetails = uiState
-                    )
+                    val (isSuccess, reason) = addOrUpdateTransactionUseCase(transactionDetails = uiState.transactionDetail)
 
                     if (isSuccess) {
                         _events.emit(UiEvent.NavigateBack)
@@ -86,16 +93,25 @@ class ManageTransactionScreenViewModel @Inject constructor(
                     _events.emit(UiEvent.ShowToast(message = reason))
                 }
             }
+            TallyManageTransactionScreenEvent.OnDeleteConfirmation -> {
+                viewModelScope.launch {
+                    uiState = uiState.copy(shouldShowDeleteConfirmationAlertDialog = false)
+                    transactionRepository.deleteTransaction(uiState.transactionDetail.toTransaction())
+                    _events.emit(UiEvent.NavigateBack)
+                }
+            }
         }
     }
 
     private fun removeKey() {
-        uiState = uiState.copy(amount = uiState.amount.dropLast(1))
+        val updatedDetails =
+            uiState.transactionDetail.copy(amount = uiState.transactionDetail.amount.dropLast(1))
+        uiState = uiState.copy(transactionDetail = updatedDetails)
     }
 
     private fun insertKey(key: String) {
 
-        val amount = "${uiState.amount}$key"
+        val amount = "${uiState.transactionDetail.amount}$key"
 
         if ((amount.toCurrencyInt() ?: return) > MAX_AMOUNT_LIMIT) {
             viewModelScope.launch {
@@ -104,19 +120,24 @@ class ManageTransactionScreenViewModel @Inject constructor(
             return
         }
 
-        uiState = uiState.copy(amount = amount)
+        val updatedDetails = uiState.transactionDetail.copy(amount = amount)
+        uiState = uiState.copy(transactionDetail = updatedDetails)
     }
 
     fun updateChosenAccountAndCategory(result: TallyChooserResult) {
         viewModelScope.launch {
-            if (result.accountId != null) {
-                val account = accountsRepository.getAccount(result.accountId)
-                uiState = uiState.copy(account = account)
+            val updatedDetails = when {
+                result.accountId != null -> {
+                    val account = accountsRepository.getAccount(result.accountId)
+                    uiState.transactionDetail.copy(account = account)
+                }
+                result.categoryId != null -> {
+                    val category = categoryRepository.getCategory(result.categoryId)
+                    uiState.transactionDetail.copy(category = category)
+                }
+                else -> uiState.transactionDetail
             }
-            if (result.categoryId != null) {
-                val category = categoryRepository.getCategory(result.categoryId)
-                uiState = uiState.copy(category = category)
-            }
+            uiState = uiState.copy(transactionDetail = updatedDetails)
         }
     }
 

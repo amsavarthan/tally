@@ -18,6 +18,7 @@ import com.amsavarthan.tally.presentation.ui.components.SummaryItem
 import com.amsavarthan.tally.presentation.ui.components.TallyAppBar
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyAccountsScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageAccountScreenDestination
+import com.amsavarthan.tally.presentation.utils.ContentDescription
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
@@ -39,7 +40,7 @@ fun TallyWalletScreen(
                     IconButton(onClick = navigator::navigateUp) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "button_back",
+                            contentDescription = ContentDescription.buttonBack,
                         )
                     }
                 },

@@ -43,7 +43,9 @@ internal class CategoryDaoTest {
         categoryDao.insertCategory(incomeCategory)
 
         //Checking if the list contains the category
-        val incomeCategories = categoryDao.getIncomeCategories().first()
+        val incomeCategories = categoryDao.getCategories()
+            .first()
+            .filter { it.type == CategoryType.Income }
         assertThat(incomeCategories).containsExactly(incomeCategory)
     }
 
@@ -71,7 +73,9 @@ internal class CategoryDaoTest {
         )
 
         //Checking if the list contains exactly the updated category
-        val incomeCategories = categoryDao.getIncomeCategories().first()
+        val incomeCategories = categoryDao.getCategories()
+            .first()
+            .filter { it.type == CategoryType.Income }
         assertThat(incomeCategories).containsExactly(updatedCategory)
     }
 
@@ -90,7 +94,9 @@ internal class CategoryDaoTest {
         categoryDao.deleteCategory(category)
 
         //Checking if the list does not contain the category
-        val categories = categoryDao.getExpenseCategories().first()
+        val categories = categoryDao.getCategories()
+            .first()
+            .filter { it.type == CategoryType.Expense }
         assertThat(categories).doesNotContain(category)
     }
 
@@ -115,7 +121,9 @@ internal class CategoryDaoTest {
         }
 
         //Checking if the list is sorted by name (lowercase)
-        val expenseCategories = categoryDao.getExpenseCategories().first()
+        val expenseCategories = categoryDao.getCategories()
+            .first()
+            .filter { it.type == CategoryType.Expense }
         assertThat(expenseCategories[0].name).isLessThan(expenseCategories[1].name)
     }
 
@@ -140,7 +148,9 @@ internal class CategoryDaoTest {
         }
 
         //Checking if the list is sorted by name (lowercase)
-        val incomeCategories = categoryDao.getIncomeCategories().first()
+        val incomeCategories = categoryDao.getCategories()
+            .first()
+            .filter { it.type == CategoryType.Income }
         assertThat(incomeCategories[0].name).isLessThan(incomeCategories[1].name)
     }
 

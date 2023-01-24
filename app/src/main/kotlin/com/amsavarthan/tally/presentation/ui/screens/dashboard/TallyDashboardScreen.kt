@@ -1,11 +1,10 @@
 package com.amsavarthan.tally.presentation.ui.screens.dashboard
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -14,6 +13,7 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -21,14 +21,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.amsavarthan.tally.R
-import com.amsavarthan.tally.domain.utils.MAX_AMOUNT_LIMIT
+import com.amsavarthan.tally.domain.entity.AccountType
+import com.amsavarthan.tally.domain.entity.CategoryType
+import com.amsavarthan.tally.domain.entity.TransactionDetail
+import com.amsavarthan.tally.domain.utils.DateFormatter
 import com.amsavarthan.tally.presentation.ui.components.SummaryItem
 import com.amsavarthan.tally.presentation.ui.screens.NavGraphs
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageTransactionScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyOnBoardingScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyWalletScreenDestination
 import com.amsavarthan.tally.presentation.ui.theme.DarkGray
+import com.amsavarthan.tally.presentation.ui.theme.LightGray
 import com.amsavarthan.tally.presentation.ui.theme.fonts
+import com.amsavarthan.tally.presentation.utils.ContentDescription
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -75,7 +80,10 @@ fun DashboardScreen(
                 },
                 backgroundColor = MaterialTheme.colors.primary
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "button_add")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = ContentDescription.buttonAdd
+                )
             }
         },
     ) { padding ->
@@ -118,7 +126,7 @@ fun DashboardScreen(
                             ) {
                                 Text(text = "Spent this week", color = Color.White)
                                 Text(
-                                    text = "₹$MAX_AMOUNT_LIMIT",
+                                    text = "₹$spentThisWeek",
                                     color = Color.White,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 42.sp,
@@ -128,13 +136,13 @@ fun DashboardScreen(
                             Spacer(modifier = Modifier.height(80.dp))
                         }
                     }
-                    stickyHeader {
+                    item {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color.White)
                                 .clickable { }
-                                .padding(all = 24.dp),
+                                .padding(all = 16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -144,18 +152,115 @@ fun DashboardScreen(
                             )
                             Icon(
                                 imageVector = Icons.Outlined.ChevronRight,
-                                contentDescription = "button_all_transactions"
+                                contentDescription = ContentDescription.buttonAllTransactions
                             )
                         }
                     }
-                    transactions.groupBy { it.dateTime }.forEach { date, transactions ->
-                        item {  }
+                    transactions.groupBy { it.localDateTime.date }.forEach { (date, transactions) ->
+                        stickyHeader {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.White)
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                text = DateFormatter(date),
+                                color = DarkGray,
+                                style = MaterialTheme.typography.subtitle2
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                        items(transactions) { transaction ->
+                            TransactionItem(
+                                transaction = transaction,
+                                onLongClick = {
+                                    navigator.navigate(
+                                        TallyManageTransactionScreenDestination(
+                                            transactionId = transaction.transactionId
+                                        )
+                                    ) {
+                                        launchSingleTop = true
+                                    }
+                                },
+                                onClick = {},
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TransactionItem(
+    transaction: TransactionDetail,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    requireNotNull(transaction.category)
+    requireNotNull(transaction.account)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(onLongClick = onLongClick, onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(LightGray),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = transaction.category.emoji, fontSize = 16.sp)
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = transaction.category.name,
+                fontFamily = fonts,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
+            )
+
+            val creditOrDebit = remember {
+                when (transaction.account.type) {
+                    AccountType.Cash -> {
+                        when (transaction.category.type) {
+                            CategoryType.Expense -> "Paid as"
+                            CategoryType.Income -> "Received as"
+                        }
+                    }
+                    else -> {
+                        when (transaction.category.type) {
+                            CategoryType.Expense -> "Debited from"
+                            CategoryType.Income -> "Credited to"
+                        }
+                    }
+                }
+
+            }
+            Text(
+                text = "$creditOrDebit ${transaction.account.name}",
+                fontFamily = fonts,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal,
+                color = DarkGray
+            )
+        }
+        Text(
+            text = "₹${transaction.amount}",
+            color = if (transaction.category.type == CategoryType.Income) MaterialTheme.colors.primary else Color.Black,
+            fontFamily = fonts,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+        )
+    }
 }
 
 @Composable
@@ -216,7 +321,7 @@ private fun WalletIcon(
             Icon(
                 modifier = Modifier.size(32.dp),
                 imageVector = Icons.Outlined.AccountBalanceWallet,
-                contentDescription = "button_wallet",
+                contentDescription = ContentDescription.buttonWallet,
                 tint = color
             )
         }

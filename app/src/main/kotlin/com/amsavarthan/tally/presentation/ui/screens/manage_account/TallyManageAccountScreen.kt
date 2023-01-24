@@ -28,6 +28,7 @@ import com.amsavarthan.tally.presentation.ui.components.TallyAppBar
 import com.amsavarthan.tally.presentation.ui.components.TallyCurrencyTextField
 import com.amsavarthan.tally.presentation.ui.components.TallyTextField
 import com.amsavarthan.tally.presentation.ui.screens.onboarding.components.TallyScaffold
+import com.amsavarthan.tally.presentation.utils.ContentDescription
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.flow.collectLatest
@@ -173,7 +174,7 @@ fun TallyManageAccountScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ArrowBack,
-                            contentDescription = "button_back",
+                            contentDescription = ContentDescription.buttonBack,
                             tint = MaterialTheme.colors.onBackground
                         )
                     }
@@ -192,7 +193,7 @@ fun TallyManageAccountScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Delete,
-                            contentDescription = "button_delete",
+                            contentDescription = ContentDescription.buttonDelete,
                             tint = MaterialTheme.colors.onBackground
                         )
                     }

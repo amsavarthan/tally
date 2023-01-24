@@ -31,8 +31,8 @@ data class Account(
 ) : Parcelable {
     fun isValid(): Boolean {
         return when (type) {
-            AccountType.Cash, AccountType.DebitCard -> name.isNotBlank() && name.length > 2
-            AccountType.CreditCard, AccountType.PayLater -> name.isNotBlank() && name.length > 2 && limit >= balance
+            AccountType.Cash, AccountType.DebitCard -> name.isNotBlank() && name.length > 2 && balance >= 0
+            AccountType.CreditCard, AccountType.PayLater -> name.isNotBlank() && name.length > 2 && balance >= 0 && limit >= balance
         }
     }
 }

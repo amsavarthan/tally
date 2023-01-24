@@ -24,6 +24,7 @@ import com.amsavarthan.tally.domain.entity.AccountType
 import com.amsavarthan.tally.presentation.ui.components.AccountItem
 import com.amsavarthan.tally.presentation.ui.components.TallyAppBar
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageAccountScreenDestination
+import com.amsavarthan.tally.presentation.utils.ContentDescription
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
@@ -67,7 +68,7 @@ fun TallyAccountsScreen(
                     IconButton(onClick = navigator::navigateUp) {
                         Icon(
                             imageVector = Icons.Outlined.ArrowBack,
-                            contentDescription = "button_back"
+                            contentDescription = ContentDescription.buttonBack
                         )
                     }
                 }

@@ -39,6 +39,7 @@ import com.amsavarthan.tally.domain.entity.CategoryType
 import com.amsavarthan.tally.presentation.ui.components.TallyAppBar
 import com.amsavarthan.tally.presentation.ui.theme.Gray
 import com.amsavarthan.tally.presentation.ui.theme.LightGray
+import com.amsavarthan.tally.presentation.utils.ContentDescription
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.flow.collectLatest
@@ -111,7 +112,7 @@ fun TallyManageCategoryScreen(
                     IconButton(onClick = navigator::navigateUp) {
                         Icon(
                             imageVector = Icons.Outlined.ArrowBack,
-                            contentDescription = "button_back"
+                            contentDescription = ContentDescription.buttonBack
                         )
                     }
                 },
@@ -129,7 +130,7 @@ fun TallyManageCategoryScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Delete,
-                                contentDescription = "button_delete",
+                                contentDescription = ContentDescription.buttonDelete,
                                 tint = MaterialTheme.colors.onBackground
                             )
                         }
@@ -142,7 +143,7 @@ fun TallyManageCategoryScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Done,
-                            contentDescription = "button_done",
+                            contentDescription = ContentDescription.buttonDone,
                             tint = MaterialTheme.colors.onBackground
                         )
                     }

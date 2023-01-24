@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.amsavarthan.tally.domain.entity.TallyKeyPadItem
 import com.amsavarthan.tally.presentation.ui.theme.KeypadGray
+import com.amsavarthan.tally.presentation.utils.ContentDescription
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -51,7 +52,7 @@ fun TallyKeyPad(
                         Icon(
                             modifier = Modifier.align(Alignment.Center),
                             imageVector = Icons.Outlined.KeyboardBackspace,
-                            contentDescription = "button_key_backspace",
+                            contentDescription = ContentDescription.buttonKeyBackspace,
                             tint = Color.Black
                         )
                         return@Box

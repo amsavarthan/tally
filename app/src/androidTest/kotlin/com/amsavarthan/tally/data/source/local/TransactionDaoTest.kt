@@ -16,19 +16,19 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
-internal class TallyEntryDaoTest {
+internal class TransactionDaoTest {
 
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
 
     @Inject
     lateinit var database: TallyDatabase
-    private lateinit var tallyEntryDao: TallyEntryDao
+    private lateinit var transactionDao: TransactionDao
 
     @Before
     fun setUp() {
         hiltRule.inject()
-        tallyEntryDao = database.entryDao()
+        transactionDao = database.transactionDao()
 
         val testAccount = Account(
             id = 0,
@@ -46,7 +46,7 @@ internal class TallyEntryDaoTest {
     fun insertEntryItem() = runTest {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
-        val tallyEntry = TallyEntry(
+        val transaction = Transaction(
             id = 1,
             amount = 10.0,
             dateTime = now,
@@ -59,19 +59,19 @@ internal class TallyEntryDaoTest {
         )
 
         //Inserting an entry into database
-        tallyEntryDao.insertEntry(tallyEntry)
+        transactionDao.insertEntry(transaction)
 
         //Getting entries
-        val entries = tallyEntryDao.getEntries().first()
+        val entries = transactionDao.getEntries().first()
 
         //Checking if the returned list contains the inserted entry
-        assertThat(entries).contains(tallyEntry)
+        assertThat(entries).contains(transaction)
     }
 
     @Test
     fun deleteEntryItem() = runTest {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val tallyEntry = TallyEntry(
+        val transaction = Transaction(
             id = 1,
             amount = 10.0,
             dateTime = now,
@@ -84,22 +84,22 @@ internal class TallyEntryDaoTest {
         )
 
         //Inserting an entry into database
-        tallyEntryDao.insertEntry(tallyEntry)
+        transactionDao.insertEntry(transaction)
 
         //Deleting the entry
-        tallyEntryDao.deleteEntry(tallyEntry)
+        transactionDao.deleteEntry(transaction)
 
         //Getting entries
-        val entries = tallyEntryDao.getEntries().first()
+        val entries = transactionDao.getEntries().first()
 
         //Checking if the returned list does not contain the entry
-        assertThat(entries).doesNotContain(tallyEntry)
+        assertThat(entries).doesNotContain(transaction)
     }
 
     @Test
     fun updateEntryItem() = runTest {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val tallyEntry = TallyEntry(
+        val transaction = Transaction(
             id = 1,
             amount = 10.0,
             dateTime = now,
@@ -112,12 +112,12 @@ internal class TallyEntryDaoTest {
         )
 
         //Inserting an entry into database
-        tallyEntryDao.insertEntry(tallyEntry)
+        transactionDao.insertEntry(transaction)
 
         val yesterday = Clock.System.now()
             .minus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
             .toLocalDateTime(TimeZone.currentSystemDefault())
-        val updatedTallyEntry = TallyEntry(
+        val updatedTransaction = Transaction(
             id = 1,
             amount = 20.0,
             dateTime = yesterday,
@@ -130,13 +130,13 @@ internal class TallyEntryDaoTest {
         )
 
         //Deleting the entry
-        tallyEntryDao.insertEntry(updatedTallyEntry)
+        transactionDao.insertEntry(updatedTransaction)
 
         //Getting entries
-        val entries = tallyEntryDao.getEntries().first()
+        val entries = transactionDao.getEntries().first()
 
         //Checking if the returned list contain the updated entry
-        assertThat(entries[0]).isEqualTo(updatedTallyEntry)
+        assertThat(entries[0]).isEqualTo(updatedTransaction)
     }
 
     @Test
@@ -148,7 +148,7 @@ internal class TallyEntryDaoTest {
                 val dateTime = Clock.System.now()
                     .plus(incrementFactor, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
                     .toLocalDateTime(TimeZone.currentSystemDefault())
-                val tallyEntry = TallyEntry(
+                val transaction = Transaction(
                     amount = 10.0,
                     dateTime = dateTime,
                     category = Category(
@@ -158,17 +158,17 @@ internal class TallyEntryDaoTest {
                     ),
                     accountId = 0
                 )
-                add(tallyEntry)
+                add(transaction)
             }
         }.shuffled()
 
         //Inserting into database
         testEntries.forEach { entry ->
-            tallyEntryDao.insertEntry(entry)
+            transactionDao.insertEntry(entry)
         }
 
         //Getting entries
-        val entries = tallyEntryDao.getEntries().first()
+        val entries = transactionDao.getEntries().first()
 
         //Checking if the returned list is in descending order
         assertThat(entries[0].dateTime).isGreaterThan(entries[1].dateTime)
@@ -181,7 +181,7 @@ internal class TallyEntryDaoTest {
         val now = Clock.System.now()
 
         //Current week tally
-        val currentWeekExpense = TallyEntry(
+        val currentWeekExpense = Transaction(
             id = 1,
             amount = 2.0,
             dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
@@ -193,7 +193,7 @@ internal class TallyEntryDaoTest {
             accountId = 0
         )
 
-        val currentWeekIncome = TallyEntry(
+        val currentWeekIncome = Transaction(
             id = 2,
             amount = 1.50,
             dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
@@ -206,7 +206,7 @@ internal class TallyEntryDaoTest {
         )
 
         //Previous week tally
-        val lastWeekExpense = TallyEntry(
+        val lastWeekExpense = Transaction(
             id = 3,
             amount = 10.0,
             dateTime = now
@@ -220,7 +220,7 @@ internal class TallyEntryDaoTest {
             accountId = 0
         )
 
-        val lastWeekIncome = TallyEntry(
+        val lastWeekIncome = Transaction(
             id = 4,
             amount = 15.0,
             dateTime = now
@@ -243,11 +243,11 @@ internal class TallyEntryDaoTest {
 
         //Inserting into database
         testEntries.forEach { entry ->
-            tallyEntryDao.insertEntry(entry)
+            transactionDao.insertEntry(entry)
         }
 
         //Getting entries
-        val entries = tallyEntryDao.getEntriesOfCurrentWeek().first()
+        val entries = transactionDao.getEntriesOfCurrentWeek().first()
 
         //Checking if the returned list has only current week entries
         assertThat(entries).containsExactly(currentWeekIncome, currentWeekExpense)
@@ -261,7 +261,7 @@ internal class TallyEntryDaoTest {
         val testEntries = buildList {
 
             //Current week tally
-            val currentWeekExpense = TallyEntry(
+            val currentWeekExpense = Transaction(
                 amount = 2.0,
                 dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
                 category = Category(
@@ -273,7 +273,7 @@ internal class TallyEntryDaoTest {
             )
             add(currentWeekExpense)
 
-            val currentWeekIncome = TallyEntry(
+            val currentWeekIncome = Transaction(
                 amount = 1.50,
                 dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
                 category = Category(
@@ -286,7 +286,7 @@ internal class TallyEntryDaoTest {
             add(currentWeekIncome)
 
             //Previous week tally
-            val lastWeekExpense = TallyEntry(
+            val lastWeekExpense = Transaction(
                 amount = 10.0,
                 dateTime = now
                     .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
@@ -300,7 +300,7 @@ internal class TallyEntryDaoTest {
             )
             add(lastWeekExpense)
 
-            val lastWeekIncome = TallyEntry(
+            val lastWeekIncome = Transaction(
                 amount = 15.0,
                 dateTime = now
                     .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
@@ -318,10 +318,10 @@ internal class TallyEntryDaoTest {
 
         //Inserting into database
         testEntries.forEach { entry ->
-            tallyEntryDao.insertEntry(entry)
+            transactionDao.insertEntry(entry)
         }
 
-        val amountSpentInCurrentWeek = tallyEntryDao.getAmountSpentInCurrentWeek().first()
+        val amountSpentInCurrentWeek = transactionDao.getAmountSpentInCurrentWeek().first()
 
         // Income - 1.50, Expense - 2.00 thus spent is 0.50
         assertThat(amountSpentInCurrentWeek).isEqualTo(0.50)
@@ -334,7 +334,7 @@ internal class TallyEntryDaoTest {
         val testEntries = buildList {
 
             //Current week tally
-            val currentWeekExpense = TallyEntry(
+            val currentWeekExpense = Transaction(
                 amount = 2.0,
                 dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
                 category = Category(
@@ -346,7 +346,7 @@ internal class TallyEntryDaoTest {
             )
             add(currentWeekExpense)
 
-            val currentWeekIncome = TallyEntry(
+            val currentWeekIncome = Transaction(
                 amount = 3.0,
                 dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
                 category = Category(
@@ -359,7 +359,7 @@ internal class TallyEntryDaoTest {
             add(currentWeekIncome)
 
             //Previous week tally
-            val lastWeekExpense = TallyEntry(
+            val lastWeekExpense = Transaction(
                 amount = 10.0,
                 dateTime = now
                     .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
@@ -373,7 +373,7 @@ internal class TallyEntryDaoTest {
             )
             add(lastWeekExpense)
 
-            val lastWeekIncome = TallyEntry(
+            val lastWeekIncome = Transaction(
                 amount = 15.0,
                 dateTime = now
                     .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
@@ -391,10 +391,10 @@ internal class TallyEntryDaoTest {
 
         //Inserting into database
         testEntries.forEach { entry ->
-            tallyEntryDao.insertEntry(entry)
+            transactionDao.insertEntry(entry)
         }
 
-        val amountSpentInCurrentWeek = tallyEntryDao.getAmountSpentInCurrentWeek().first()
+        val amountSpentInCurrentWeek = transactionDao.getAmountSpentInCurrentWeek().first()
 
         // Income - 3.00, Expense - 2.00 thus spent is -1 which should give 0
         assertThat(amountSpentInCurrentWeek).isEqualTo(0)
