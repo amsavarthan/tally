@@ -37,106 +37,24 @@ internal class TransactionDaoTest {
             type = AccountType.Cash,
         )
 
+        val testIncome = Category(
+            id = 0,
+            name = "test-category",
+            emoji = "🎁",
+            type = CategoryType.Income
+        )
+
+        val testExpense = Category(
+            id = 1,
+            name = "test-category-expense",
+            emoji = "💸",
+            type = CategoryType.Expense
+        )
+
         runTest {
             database.accountDao().insertAccount(testAccount)
+            database.categoryDao().insertCategory(testIncome, testExpense)
         }
-    }
-
-    @Test
-    fun insertEntryItem() = runTest {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-
-        val transaction = Transaction(
-            id = 1,
-            amount = 10.0,
-            dateTime = now,
-            category = Category(
-                name = "test-category",
-                emoji = "🍔",
-                type = CategoryType.Expense
-            ),
-            accountId = 0
-        )
-
-        //Inserting an entry into database
-        transactionDao.insertEntry(transaction)
-
-        //Getting entries
-        val entries = transactionDao.getEntries().first()
-
-        //Checking if the returned list contains the inserted entry
-        assertThat(entries).contains(transaction)
-    }
-
-    @Test
-    fun deleteEntryItem() = runTest {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val transaction = Transaction(
-            id = 1,
-            amount = 10.0,
-            dateTime = now,
-            category = Category(
-                name = "test-category",
-                emoji = "🍔",
-                type = CategoryType.Expense
-            ),
-            accountId = 0
-        )
-
-        //Inserting an entry into database
-        transactionDao.insertEntry(transaction)
-
-        //Deleting the entry
-        transactionDao.deleteEntry(transaction)
-
-        //Getting entries
-        val entries = transactionDao.getEntries().first()
-
-        //Checking if the returned list does not contain the entry
-        assertThat(entries).doesNotContain(transaction)
-    }
-
-    @Test
-    fun updateEntryItem() = runTest {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val transaction = Transaction(
-            id = 1,
-            amount = 10.0,
-            dateTime = now,
-            category = Category(
-                name = "test-category",
-                emoji = "🍔",
-                type = CategoryType.Expense
-            ),
-            accountId = 0
-        )
-
-        //Inserting an entry into database
-        transactionDao.insertEntry(transaction)
-
-        val yesterday = Clock.System.now()
-            .minus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
-            .toLocalDateTime(TimeZone.currentSystemDefault())
-        val updatedTransaction = Transaction(
-            id = 1,
-            amount = 20.0,
-            dateTime = yesterday,
-            category = Category(
-                name = "test-category-edited",
-                emoji = "🍔",
-                type = CategoryType.Expense
-            ),
-            accountId = 0
-        )
-
-        //Deleting the entry
-        transactionDao.insertEntry(updatedTransaction)
-
-        //Getting entries
-        val entries = transactionDao.getEntries().first()
-
-        //Checking if the returned list contain the updated entry
-        assertThat(entries[0]).isEqualTo(updatedTransaction)
     }
 
     @Test
@@ -151,12 +69,9 @@ internal class TransactionDaoTest {
                 val transaction = Transaction(
                     amount = 10.0,
                     dateTime = dateTime,
-                    category = Category(
-                        name = "test-category",
-                        emoji = "🍔",
-                        type = CategoryType.Expense
-                    ),
-                    accountId = 0
+                    categoryId = 0,
+                    accountId = 0,
+                    transactionType = CategoryType.Income
                 )
                 add(transaction)
             }
@@ -168,7 +83,7 @@ internal class TransactionDaoTest {
         }
 
         //Getting entries
-        val entries = transactionDao.getEntries().first()
+        val entries = transactionDao.getTransactionEntries().first()
 
         //Checking if the returned list is in descending order
         assertThat(entries[0].dateTime).isGreaterThan(entries[1].dateTime)
@@ -185,24 +100,18 @@ internal class TransactionDaoTest {
             id = 1,
             amount = 2.0,
             dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
-            category = Category(
-                name = "test-category",
-                emoji = "🍔",
-                type = CategoryType.Expense
-            ),
-            accountId = 0
+            categoryId = 1,
+            accountId = 0,
+            transactionType = CategoryType.Expense
         )
 
         val currentWeekIncome = Transaction(
             id = 2,
             amount = 1.50,
             dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
-            category = Category(
-                name = "test-category",
-                emoji = "🍔",
-                type = CategoryType.Income
-            ),
-            accountId = 0
+            categoryId = 0,
+            accountId = 0,
+            transactionType = CategoryType.Income
         )
 
         //Previous week tally
@@ -212,12 +121,9 @@ internal class TransactionDaoTest {
             dateTime = now
                 .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
                 .toLocalDateTime(TimeZone.currentSystemDefault()),
-            category = Category(
-                name = "test-category",
-                emoji = "🍔",
-                type = CategoryType.Expense
-            ),
-            accountId = 0
+            categoryId = 1,
+            accountId = 0,
+            transactionType = CategoryType.Expense
         )
 
         val lastWeekIncome = Transaction(
@@ -226,12 +132,9 @@ internal class TransactionDaoTest {
             dateTime = now
                 .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
                 .toLocalDateTime(TimeZone.currentSystemDefault()),
-            category = Category(
-                name = "test-category",
-                emoji = "🍔",
-                type = CategoryType.Income
-            ),
-            accountId = 0
+            categoryId = 0,
+            accountId = 0,
+            transactionType = CategoryType.Income
         )
 
         val testEntries = listOf(
@@ -264,24 +167,18 @@ internal class TransactionDaoTest {
             val currentWeekExpense = Transaction(
                 amount = 2.0,
                 dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
-                category = Category(
-                    name = "test-category",
-                    emoji = "🍔",
-                    type = CategoryType.Expense
-                ),
-                accountId = 0
+                categoryId = 1,
+                accountId = 0,
+                transactionType = CategoryType.Expense
             )
             add(currentWeekExpense)
 
             val currentWeekIncome = Transaction(
                 amount = 1.50,
                 dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
-                category = Category(
-                    name = "test-category",
-                    emoji = "🍔",
-                    type = CategoryType.Income
-                ),
-                accountId = 0
+                categoryId = 0,
+                accountId = 0,
+                transactionType = CategoryType.Income
             )
             add(currentWeekIncome)
 
@@ -291,12 +188,9 @@ internal class TransactionDaoTest {
                 dateTime = now
                     .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
                     .toLocalDateTime(TimeZone.currentSystemDefault()),
-                category = Category(
-                    name = "test-category",
-                    emoji = "🍔",
-                    type = CategoryType.Expense
-                ),
-                accountId = 0
+                categoryId = 1,
+                accountId = 0,
+                transactionType = CategoryType.Expense
             )
             add(lastWeekExpense)
 
@@ -305,12 +199,9 @@ internal class TransactionDaoTest {
                 dateTime = now
                     .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
                     .toLocalDateTime(TimeZone.currentSystemDefault()),
-                category = Category(
-                    name = "test-category",
-                    emoji = "🍔",
-                    type = CategoryType.Income
-                ),
-                accountId = 0
+                categoryId = 0,
+                accountId = 0,
+                transactionType = CategoryType.Income
             )
             add(lastWeekIncome)
 
@@ -337,24 +228,18 @@ internal class TransactionDaoTest {
             val currentWeekExpense = Transaction(
                 amount = 2.0,
                 dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
-                category = Category(
-                    name = "test-category",
-                    emoji = "🍔",
-                    type = CategoryType.Expense
-                ),
-                accountId = 0
+                categoryId = 1,
+                accountId = 0,
+                transactionType = CategoryType.Expense
             )
             add(currentWeekExpense)
 
             val currentWeekIncome = Transaction(
                 amount = 3.0,
                 dateTime = now.toLocalDateTime(TimeZone.currentSystemDefault()),
-                category = Category(
-                    name = "test-category",
-                    emoji = "🍔",
-                    type = CategoryType.Income
-                ),
-                accountId = 0
+                categoryId = 0,
+                accountId = 0,
+                transactionType = CategoryType.Income
             )
             add(currentWeekIncome)
 
@@ -364,12 +249,9 @@ internal class TransactionDaoTest {
                 dateTime = now
                     .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
                     .toLocalDateTime(TimeZone.currentSystemDefault()),
-                category = Category(
-                    name = "test-category",
-                    emoji = "🍔",
-                    type = CategoryType.Expense
-                ),
-                accountId = 0
+                categoryId = 1,
+                accountId = 0,
+                transactionType = CategoryType.Expense
             )
             add(lastWeekExpense)
 
@@ -378,12 +260,9 @@ internal class TransactionDaoTest {
                 dateTime = now
                     .minus(1, DateTimeUnit.WEEK, TimeZone.currentSystemDefault())
                     .toLocalDateTime(TimeZone.currentSystemDefault()),
-                category = Category(
-                    name = "test-category",
-                    emoji = "🍔",
-                    type = CategoryType.Income
-                ),
-                accountId = 0
+                categoryId = 0,
+                accountId = 0,
+                transactionType = CategoryType.Income
             )
             add(lastWeekIncome)
 

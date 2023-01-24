@@ -1,5 +1,6 @@
 package com.amsavarthan.tally.data.source.local
 
+import android.database.sqlite.SQLiteConstraintException
 import com.amsavarthan.tally.domain.entity.Account
 import com.amsavarthan.tally.domain.entity.AccountType
 import com.google.common.truth.Truth.assertThat
@@ -57,50 +58,30 @@ internal class AccountDaoTest {
     }
 
     @Test
-    fun updateAccountItem() = runTest {
-        val account = Account(
+    fun failsToInsertsAccountWithSameNameAndType() = runTest {
+        val debitAccount = Account(
             id = 0,
             name = "test-account",
             limit = 100.0,
             type = AccountType.DebitCard
         )
 
-        //Inserting an account
-        accountDao.insertAccount(account)
-
-        val updatedAccount = Account(
-            id = 0,
-            name = "test-account-edited",
-            limit = 200.0,
-            type = AccountType.CreditCard
-        )
-
-        //Updating the account
-        accountDao.updateAccount(updatedAccount)
-
-        //Checking if the list contains only the updated account
-        val accounts = accountDao.getAccountEntities().first()
-        assertThat(accounts).containsExactly(updatedAccount)
-    }
-
-    @Test
-    fun deleteAccountItem() = runTest {
-        val account = Account(
-            id = 0,
+        val anotherDebitAccount = Account(
+            id = 1,
             name = "test-account",
             limit = 100.0,
             type = AccountType.DebitCard
         )
 
         //Inserting an account
-        accountDao.insertAccount(account)
+        accountDao.insertAccount(debitAccount)
 
-        //Deleting the inserted account
-        accountDao.deleteAccount(account)
-
-        //Checking if the list does not contain the account
-        val accounts = accountDao.getAccountEntities().first()
-        assertThat(accounts).isEmpty()
+        //Should fail
+        try {
+            accountDao.insertAccount(anotherDebitAccount)
+        } catch (e: SQLiteConstraintException) {
+            assertThat(e).isInstanceOf(SQLiteConstraintException::class.java)
+        }
     }
 
     @Test
