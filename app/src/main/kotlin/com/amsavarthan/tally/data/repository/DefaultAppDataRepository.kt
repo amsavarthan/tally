@@ -13,7 +13,11 @@ class DefaultAppDataRepository @Inject constructor(
     override val appData: Flow<AppPreference>
         get() = tallyPreferencesDataSource.appData
 
-    override suspend fun updateOnBoardingState(hasOnBoarded: Boolean) =
+    override suspend fun setOnBoardingState(hasOnBoarded: Boolean) =
         tallyPreferencesDataSource.updateOnBoardingState(hasOnBoarded)
+
+    override suspend fun setLastSelectedCategoryId(id: Long) =
+        tallyPreferencesDataSource.updateLastSelectedCategoryId(id)
+
 
 }

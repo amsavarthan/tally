@@ -26,7 +26,7 @@ import kotlinx.serialization.Serializable
 )
 @Serializable
 @Parcelize
-data class TallyEntry(
+data class Transaction(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id")
     val id: Long? = null,
     @ColumnInfo(name = "amount")
@@ -35,8 +35,12 @@ data class TallyEntry(
     @TypeParceler<LocalDateTime, LocalDateTimeParceler>()
     @ColumnInfo(name = "date_time")
     val dateTime: LocalDateTime,
-    @Embedded(prefix = "category_")
-    val category: Category,
+    @ColumnInfo(name = "category_id")
+    val categoryId: Long,
     @ColumnInfo(name = "account_id")
     val accountId: Long,
+    @ColumnInfo(name = "transaction_type")
+    val transactionType: TransactionType,
 ) : Parcelable
+
+typealias TransactionType = CategoryType

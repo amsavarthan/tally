@@ -8,21 +8,19 @@ import kotlinx.coroutines.flow.Flow
 interface CategoryDao {
 
     @Insert
-    suspend fun insertCategory(category: Category)
+    suspend fun insertCategory(vararg category: Category)
+
 
     @Delete
     suspend fun deleteCategory(category: Category)
 
-    @Transaction
-    suspend fun updateCategory(oldCategory: Category, newCategory: Category) {
-        deleteCategory(oldCategory)
-        insertCategory(newCategory)
-    }
+    @Update
+    suspend fun updateCategory(category: Category)
 
-    @Query("SELECT * FROM category WHERE type = 'income' ORDER BY name COLLATE NOCASE ASC")
-    fun getIncomeCategories(): Flow<List<Category>>
+    @Query("SELECT * FROM category WHERE id = :id")
+    suspend fun getCategoryEntity(id: Long): Category
 
-    @Query("SELECT * FROM category WHERE type = 'expense' ORDER BY name COLLATE NOCASE ASC")
-    fun getExpenseCategories(): Flow<List<Category>>
+    @Query("SELECT * FROM category ORDER BY name COLLATE NOCASE ASC")
+    fun getCategories(): Flow<List<Category>>
 
 }

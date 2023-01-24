@@ -7,6 +7,7 @@ interface AppDataRepository {
 
     val appData: Flow<AppPreference>
 
-    suspend fun updateOnBoardingState(hasOnBoarded: Boolean)
+    suspend fun setOnBoardingState(hasOnBoarded: Boolean)
+    suspend fun setLastSelectedCategoryId(id: Long)
 
 }

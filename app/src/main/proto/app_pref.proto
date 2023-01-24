@@ -5,4 +5,5 @@ option java_multiple_files = true;
 
 message AppPreference {
   bool has_onboarded = 1;
+  uint64 last_selected_category_id = 2;
 }

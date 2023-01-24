@@ -1,28 +1,25 @@
 package com.amsavarthan.tally.domain.utils
 
-object CurrencyFilter {
+const val MAX_AMOUNT_LIMIT = 1_00_00_000
 
-    operator fun invoke(input: String): String {
-        if (!input.contains(".")) {
-            return input.take(7)
-        }
-
-        val filtered = input.removeAllExceptFirst(".")
-
-        val digitsBeforeDecimal = filtered.substringBefore(".").take(7)
-        val digitsAfterDecimal = filtered.substringAfter(".").take(2)
-
-        if (digitsAfterDecimal.isBlank()) return digitsBeforeDecimal
-        return "$digitsBeforeDecimal.$digitsAfterDecimal"
+fun String.isInValidCurrencyFormat(): Boolean {
+    if (contains(".")) {
+        if (count { it == '.' } > 1) return false
+        if (substringAfter('.').length > 2) return false
     }
 
-    private fun String.removeAllExceptFirst(
-        value: String,
-        tempReplacementValue: String = "#",
-    ): String {
-        return this.replaceFirst(value, tempReplacementValue)
-            .replace(value, "")
-            .replaceFirst(tempReplacementValue, value)
-    }
+    if (endsWith("."))
+        plus(0).toDoubleOrNull() ?: return false
+    else
+        toDoubleOrNull() ?: return false
 
+    return true
+}
+
+fun String.toCurrencyInt(): Double? {
+    return when {
+        isEmpty() -> 0.0
+        isInValidCurrencyFormat() -> if (endsWith(".")) plus(0).toDouble() else toDouble()
+        else -> null
+    }
 }

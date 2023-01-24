@@ -6,11 +6,11 @@ import androidx.room.TypeConverters
 import com.amsavarthan.tally.data.utils.TallyTypeConverters
 import com.amsavarthan.tally.domain.entity.Account
 import com.amsavarthan.tally.domain.entity.Category
-import com.amsavarthan.tally.domain.entity.TallyEntry
+import com.amsavarthan.tally.domain.entity.Transaction
 
 @Database(
     entities = [
-        TallyEntry::class,
+        Transaction::class,
         Account::class,
         Category::class
     ],
@@ -19,7 +19,7 @@ import com.amsavarthan.tally.domain.entity.TallyEntry
 @TypeConverters(TallyTypeConverters::class)
 abstract class TallyDatabase : RoomDatabase() {
 
-    abstract fun entryDao(): TallyEntryDao
+    abstract fun transactionDao(): TransactionDao
     abstract fun categoryDao(): CategoryDao
     abstract fun accountDao(): AccountDao
 

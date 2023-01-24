@@ -3,7 +3,7 @@ package com.amsavarthan.tally.di
 import com.amsavarthan.tally.data.source.local.AccountDao
 import com.amsavarthan.tally.data.source.local.CategoryDao
 import com.amsavarthan.tally.data.source.local.TallyDatabase
-import com.amsavarthan.tally.data.source.local.TallyEntryDao
+import com.amsavarthan.tally.data.source.local.TransactionDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,7 +16,7 @@ object DaosModule {
     @Provides
     fun provideEntryDao(
         database: TallyDatabase,
-    ): TallyEntryDao = database.entryDao()
+    ): TransactionDao = database.transactionDao()
 
     @Provides
     fun provideCategoryDao(

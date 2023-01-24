@@ -3,16 +3,25 @@ package com.amsavarthan.tally.domain.entity
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Entity(
     tableName = "category",
-    primaryKeys = ["name", "type"],
+    indices = [
+        Index(
+            value = ["name", "type"],
+            unique = true
+        )
+    ],
 )
 @Serializable
 @Parcelize
 data class Category(
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id")
+    val id: Long? = null,
     @ColumnInfo(name = "name")
     val name: String,
     @ColumnInfo(name = "emoji")
@@ -20,19 +29,3 @@ data class Category(
     @ColumnInfo(name = "type")
     val type: CategoryType,
 ) : Parcelable
-
-@Serializable
-@Parcelize
-sealed class CategoryType(val title: String) : Parcelable {
-    object Income : CategoryType("Income")
-    object Expense : CategoryType("Expense")
-    companion object {
-        fun parse(title: String): CategoryType {
-            return when (title.lowercase()) {
-                Income.title.lowercase() -> Income
-                Expense.title.lowercase() -> Expense
-                else -> throw IllegalArgumentException("Corresponding category type not found for $title")
-            }
-        }
-    }
-}

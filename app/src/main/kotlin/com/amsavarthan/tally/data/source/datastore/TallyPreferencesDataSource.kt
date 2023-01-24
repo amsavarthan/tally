@@ -32,4 +32,16 @@ class TallyPreferencesDataSource @Inject constructor(
             Log.e("TallyPreferences", "Failed to update app preferences", ioException)
         }
     }
+
+    suspend fun updateLastSelectedCategoryId(id: Long) {
+        try {
+            appPreference.updateData { currentPreferences ->
+                currentPreferences.toBuilder()
+                    .setLastSelectedCategoryId(id)
+                    .build()
+            }
+        } catch (ioException: IOException) {
+            Log.e("TallyPreferences", "Failed to update app preferences", ioException)
+        }
+    }
 }

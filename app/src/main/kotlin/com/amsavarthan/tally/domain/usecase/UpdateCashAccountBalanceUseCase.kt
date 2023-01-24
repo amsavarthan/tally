@@ -13,7 +13,10 @@ class UpdateCashAccountBalanceUseCase @Inject constructor(
         val cashAccount = accountsRepository.getAccount(accountId)
 
         if (cashAccount.type != AccountType.Cash) return
-        accountsRepository.updateAccount(cashAccount.copy(balance = balance))
+
+        accountsRepository.updateAccount(
+            cashAccount.copy(balance = balance)
+        )
     }
 
 }
