@@ -213,9 +213,7 @@ fun TallyManageAccountScreen(
                         TallyManageAccountScreenEvent.OnAccountBalanceEntered(balance = amount)
                     )
                 },
-                onDone = {
-                    viewModel.onEvent(TallyManageAccountScreenEvent.OnActionButtonClicked)
-                }
+                onDone = navigator::navigateUp
             )
             AccountType.DebitCard -> AddEditDebitCardLayout(
                 details = debitCardDetails,

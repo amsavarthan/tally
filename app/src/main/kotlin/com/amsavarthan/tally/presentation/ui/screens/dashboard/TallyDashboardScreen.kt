@@ -44,7 +44,7 @@ import com.ramcosta.composedestinations.navigation.popUpTo
 @RootNavGraph(start = true)
 @Destination
 @Composable
-fun DashboardScreen(
+fun TallyDashboardScreen(
     navigator: DestinationsNavigator,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {

@@ -11,6 +11,7 @@
     </style>
 
     <style name="Theme.Tally.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
         <item name="postSplashScreenTheme">@style/Theme.Tally</item>
     </style>
 </resources>

@@ -19,7 +19,7 @@ import com.amsavarthan.tally.presentation.ui.components.AccountItem
 import com.amsavarthan.tally.presentation.ui.components.SummaryItem
 import com.amsavarthan.tally.presentation.ui.components.TallyCurrencyTextField
 import com.amsavarthan.tally.presentation.ui.screens.NavGraphs
-import com.amsavarthan.tally.presentation.ui.screens.destinations.DashboardScreenDestination
+import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyDashboardScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageAccountScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.onboarding.components.TallyScaffold
 import com.ramcosta.composedestinations.annotation.Destination
@@ -48,7 +48,7 @@ fun TallyOnBoardingScreen(
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
                 OnBoardingScreenViewModel.UiEvent.NavigateToDashboard -> {
-                    navigator.navigate(DashboardScreenDestination) {
+                    navigator.navigate(TallyDashboardScreenDestination) {
                         launchSingleTop = true
                         popUpTo(NavGraphs.root)
                     }
