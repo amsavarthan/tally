@@ -27,11 +27,6 @@ data class TransactionDetail(
 @Throws(IllegalStateException::class)
 fun TransactionDetail.toTransaction(): Transaction {
 
-    val amount = amount.toDoubleOrNull()
-    checkNotNull(amount) {
-        "Invalid amount entered"
-    }
-
     checkNotNull(account) {
         "Please choose an account for this transaction"
     }
@@ -42,7 +37,7 @@ fun TransactionDetail.toTransaction(): Transaction {
 
     return Transaction(
         id = transactionId,
-        amount = amount,
+        amount = amount.toDoubleOrNull() ?: 0.0,
         dateTime = localDateTime,
         categoryId = category.id!!,
         accountId = account.id!!,

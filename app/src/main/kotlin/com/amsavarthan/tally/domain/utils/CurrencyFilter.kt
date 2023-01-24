@@ -1,6 +1,7 @@
 package com.amsavarthan.tally.domain.utils
 
 const val MAX_AMOUNT_LIMIT = 1_00_00_000
+const val MIN_AMOUNT_LIMIT = 1
 
 fun String.isInValidCurrencyFormat(): Boolean {
     if (contains(".")) {
