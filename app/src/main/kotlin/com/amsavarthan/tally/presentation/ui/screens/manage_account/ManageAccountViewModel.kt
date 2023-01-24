@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.amsavarthan.tally.domain.entity.AccountType
 import com.amsavarthan.tally.domain.repository.AccountsRepository
+import com.amsavarthan.tally.domain.usecase.AddOrUpdateAccountUseCase
 import com.amsavarthan.tally.domain.usecase.UpdateCashAccountBalanceUseCase
 import com.amsavarthan.tally.domain.utils.CurrencyFormatter
 import com.amsavarthan.tally.domain.utils.MAX_AMOUNT_LIMIT
@@ -21,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ManageAccountViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val addOrUpdateAccountUseCase: AddOrUpdateAccountUseCase,
     private val updateCashAccountBalanceUseCase: UpdateCashAccountBalanceUseCase,
     private val accountsRepository: AccountsRepository,
 ) : ViewModel() {
@@ -115,27 +117,18 @@ class ManageAccountViewModel @Inject constructor(
                 AccountType.CreditCard -> uiState.creditCardDetails.toAccount(accountType)
                 AccountType.DebitCard -> uiState.debitCardDetails.toAccount()
                 AccountType.PayLater -> uiState.payLaterAccountDetails.toAccount(accountType)
-                else ->null
-            }?.copy(id = uiState.accountId)
+                else -> return@launch
+            }.copy(id = uiState.accountId)
 
-            if (account == null) {
-                _events.emit(UiEvent.NavigateBack)
+            val (accountId, result) = addOrUpdateAccountUseCase(account)
+            val (isSuccess, reason) = result
+
+            if (!isSuccess) {
+                _events.emit(UiEvent.ShowToast(reason))
                 return@launch
             }
 
-            if (!account.isValid()) {
-                _events.emit(UiEvent.ShowToast("Invalid ${accountType.title} details"))
-                return@launch
-            }
-
-            if (account.id == null) {
-                val accountId = accountsRepository.insertAccount(account)
-                uiState = uiState.copy(accountId = accountId)
-            } else {
-                accountsRepository.updateAccount(account)
-            }
-
-            uiState = uiState.copy(hasDataChanged = false)
+            uiState = uiState.copy(accountId = accountId, hasDataChanged = false)
             _events.emit(UiEvent.NavigateBack)
         }
     }
