@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
 import com.amsavarthan.tally.domain.utils.LocalDateTimeParceler
+import com.amsavarthan.tally.domain.utils.TransactionType
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.parcelize.Parcelize
@@ -43,4 +44,3 @@ data class Transaction(
     val transactionType: TransactionType,
 ) : Parcelable
 
-typealias TransactionType = CategoryType

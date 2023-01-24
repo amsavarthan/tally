@@ -1,5 +1,6 @@
 package com.amsavarthan.tally.presentation.ui.screens.dashboard
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -87,103 +88,111 @@ fun DashboardScreen(
             }
         },
     ) { padding ->
-        when {
-            transactions.isEmpty() -> {
-                EmptyTransactionsLayout(
-                    outstandingBalanceAmount = outstandingBalanceAmount,
-                    repaymentAmount = repaymentAmount,
-                    onWalletIconClicked = {
-                        navigator.navigate(TallyWalletScreenDestination) {
-                            launchSingleTop = true
-                        }
+
+        AnimatedVisibility(
+            visible = transactions.isEmpty(),
+            enter = fadeIn() + slideInHorizontally(),
+            exit = fadeOut() + slideOutHorizontally()
+        ) {
+            EmptyTransactionsLayout(
+                outstandingBalanceAmount = outstandingBalanceAmount,
+                repaymentAmount = repaymentAmount,
+                onWalletIconClicked = {
+                    navigator.navigate(TallyWalletScreenDestination) {
+                        launchSingleTop = true
                     }
-                )
-            }
-            else -> {
-                LazyColumn {
-                    item {
+                }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = transactions.isNotEmpty(),
+            enter = fadeIn() + slideInHorizontally(),
+            exit = fadeOut() + slideOutHorizontally()
+        ) {
+            LazyColumn {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .background(Color.Black)
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 16.dp),
+                    ) {
+                        WalletIcon(color = Color.White, onClick = {
+                            navigator.navigate(TallyWalletScreenDestination) {
+                                launchSingleTop = true
+                            }
+                        })
+                        Spacer(modifier = Modifier.height(24.dp))
                         Column(
                             modifier = Modifier
-                                .background(Color.Black)
-                                .padding(horizontal = 24.dp)
-                                .padding(top = 16.dp),
+                                .fillMaxWidth()
+                                .padding(vertical = 24.dp),
+                            verticalArrangement = Arrangement.spacedBy(
+                                8.dp,
+                                Alignment.CenterVertically
+                            ),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            WalletIcon(color = Color.White, onClick = {
-                                navigator.navigate(TallyWalletScreenDestination) {
-                                    launchSingleTop = true
-                                }
-                            })
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 24.dp),
-                                verticalArrangement = Arrangement.spacedBy(
-                                    8.dp,
-                                    Alignment.CenterVertically
-                                ),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(text = "Spent this week", color = Color.White)
-                                Text(
-                                    text = "₹$spentThisWeek",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 42.sp,
-                                    fontFamily = fonts
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(80.dp))
+                            Text(text = "Spent this week", color = Color.White)
+                            Text(
+                                text = "₹$spentThisWeek",
+                                color = Color.White,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 42.sp,
+                                fontFamily = fonts
+                            )
                         }
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
-                    item {
-                        Row(
+                }
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .clickable { }
+                            .padding(all = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Last Transactions",
+                            style = MaterialTheme.typography.body1.copy(fontWeight = FontWeight.Medium)
+                        )
+                        Icon(
+                            imageVector = Icons.Outlined.ChevronRight,
+                            contentDescription = ContentDescription.buttonAllTransactions
+                        )
+                    }
+                }
+                transactions.groupBy { it.localDateTime.date }.forEach { (date, transactions) ->
+                    stickyHeader {
+                        Text(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color.White)
-                                .clickable { }
-                                .padding(all = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Last Transactions",
-                                style = MaterialTheme.typography.body1.copy(fontWeight = FontWeight.Medium)
-                            )
-                            Icon(
-                                imageVector = Icons.Outlined.ChevronRight,
-                                contentDescription = ContentDescription.buttonAllTransactions
-                            )
-                        }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            text = DateFormatter(date),
+                            color = DarkGray,
+                            style = MaterialTheme.typography.subtitle2
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
                     }
-                    transactions.groupBy { it.localDateTime.date }.forEach { (date, transactions) ->
-                        stickyHeader {
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.White)
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                text = DateFormatter(date),
-                                color = DarkGray,
-                                style = MaterialTheme.typography.subtitle2
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
-                        items(transactions) { transaction ->
-                            TransactionItem(
-                                transaction = transaction,
-                                onLongClick = {
-                                    navigator.navigate(
-                                        TallyManageTransactionScreenDestination(
-                                            transactionId = transaction.transactionId
-                                        )
-                                    ) {
-                                        launchSingleTop = true
-                                    }
-                                },
-                                onClick = {},
-                            )
-                        }
+                    items(transactions) { transaction ->
+                        TransactionItem(
+                            transaction = transaction,
+                            onLongClick = {
+                                navigator.navigate(
+                                    TallyManageTransactionScreenDestination(
+                                        transactionId = transaction.transactionId
+                                    )
+                                ) {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onClick = {},
+                        )
                     }
                 }
             }

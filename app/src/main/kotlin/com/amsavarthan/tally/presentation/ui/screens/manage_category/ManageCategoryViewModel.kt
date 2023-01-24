@@ -68,12 +68,12 @@ class ManageCategoryViewModel @Inject constructor(
                     _events.emit(UiEvent.NavigateBack)
                 }
                 TallyManageCategoryScreenEvent.OnDoneButtonClicked -> {
-                    val isSuccess = addOrUpdateCategoryUseCase(uiState.category)
+                    val (isSuccess, reason) = addOrUpdateCategoryUseCase(uiState.category)
                     if (isSuccess) {
                         _events.emit(UiEvent.NavigateBack)
                         return@launch
                     }
-                    _events.emit(UiEvent.ShowSnackBar("Invalid details provided"))
+                    _events.emit(UiEvent.ShowSnackBar(reason))
                 }
             }
         }
