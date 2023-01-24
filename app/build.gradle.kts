@@ -17,6 +17,7 @@ plugins {
 android {
     namespace = "com.amsavarthan.tally"
     compileSdk = 33
+    testBuildType = "staging"
 
     defaultConfig {
         applicationId = "com.amsavarthan.tally"
@@ -49,6 +50,16 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            applicationIdSuffix = ".debug"
+        }
+        create("staging"){
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            applicationIdSuffix = ".staging"
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     applicationVariants.all {
