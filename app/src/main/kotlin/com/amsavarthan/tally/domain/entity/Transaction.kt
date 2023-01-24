@@ -20,9 +20,15 @@ import kotlinx.serialization.Serializable
             childColumns = ["account_id"],
             onDelete = CASCADE,
         ),
+        ForeignKey(
+            entity = Category::class,
+            parentColumns = ["id"],
+            childColumns = ["category_id"],
+            onDelete = CASCADE,
+        ),
     ],
     indices = [
-        Index(value = ["account_id"])
+        Index(value = ["account_id", "category_id"])
     ]
 )
 @Serializable
