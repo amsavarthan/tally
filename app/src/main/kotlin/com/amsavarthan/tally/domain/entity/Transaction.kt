@@ -28,7 +28,8 @@ import kotlinx.serialization.Serializable
         ),
     ],
     indices = [
-        Index(value = ["account_id", "category_id"])
+        Index(value = ["account_id"]),
+        Index(value = ["category_id"])
     ]
 )
 @Serializable

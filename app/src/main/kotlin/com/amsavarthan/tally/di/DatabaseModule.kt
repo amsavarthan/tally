@@ -29,7 +29,6 @@ object DatabaseModule {
             TallyDatabase.DB_NAME,
         )
             .addCallback(RoomCallback(provider))
-            .fallbackToDestructiveMigration()
             .build()
     }
 

@@ -30,6 +30,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
     }
 
     buildTypes {
@@ -168,4 +169,8 @@ protobuf {
 
 kapt {
     correctErrorTypes = true
+}
+
+ksp {
+    arg("room.schemaLocation","$projectDir/schemas")
 }
