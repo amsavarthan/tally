@@ -1,6 +1,7 @@
 package com.amsavarthan.tally.presentation.ui.screens.dashboard
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,25 +15,25 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.amsavarthan.tally.R
-import com.amsavarthan.tally.domain.entity.AccountType
-import com.amsavarthan.tally.domain.entity.CategoryType
-import com.amsavarthan.tally.domain.entity.TransactionDetail
 import com.amsavarthan.tally.domain.utils.DateFormatter
 import com.amsavarthan.tally.presentation.ui.components.SummaryItem
+import com.amsavarthan.tally.presentation.ui.components.TransactionItem
 import com.amsavarthan.tally.presentation.ui.screens.NavGraphs
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyManageTransactionScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyOnBoardingScreenDestination
+import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyTransactionsScreenDestination
 import com.amsavarthan.tally.presentation.ui.screens.destinations.TallyWalletScreenDestination
 import com.amsavarthan.tally.presentation.ui.theme.DarkGray
-import com.amsavarthan.tally.presentation.ui.theme.LightGray
 import com.amsavarthan.tally.presentation.ui.theme.fonts
 import com.amsavarthan.tally.presentation.utils.ContentDescription
 import com.ramcosta.composedestinations.annotation.Destination
@@ -40,7 +41,7 @@ import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @RootNavGraph(start = true)
 @Destination
 @Composable
@@ -66,20 +67,46 @@ fun TallyDashboardScreen(
     val (
         outstandingBalanceAmount,
         repaymentAmount,
-        transactions,
-        spentThisWeek,
+        currentWeekData,
+        totalTransactions,
     ) = viewModel.uiState
+
+    val sixthPercentOfScreenHeight = (LocalConfiguration.current.screenHeightDp * 0.6).dp
+    val sheetPeekHeight by animateDpAsState(
+        targetValue = if (currentWeekData.transactions.isEmpty()) 0.dp else sixthPercentOfScreenHeight
+    )
+
+    val fabPosition by animateValueAsState(
+        targetValue = when {
+            totalTransactions == 0 -> FabPosition.End
+            currentWeekData.transactions.isEmpty() -> FabPosition.Center
+            else -> FabPosition.End
+        },
+        typeConverter = TwoWayConverter(
+            convertToVector = { fabPosition ->
+                when (fabPosition) {
+                    FabPosition.Center -> AnimationVector1D(0f)
+                    else -> AnimationVector1D(1f)
+                }
+            },
+            convertFromVector = { vector ->
+                when (vector.value) {
+                    0f -> FabPosition.Center
+                    else -> FabPosition.End
+                }
+            }
+        )
+    )
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                modifier = Modifier.padding(16.dp),
+                backgroundColor = MaterialTheme.colors.primary,
                 onClick = {
                     navigator.navigate(TallyManageTransactionScreenDestination()) {
                         launchSingleTop = true
                     }
                 },
-                backgroundColor = MaterialTheme.colors.primary
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -87,42 +114,109 @@ fun TallyDashboardScreen(
                 )
             }
         },
+        floatingActionButtonPosition = fabPosition,
+        backgroundColor = if (totalTransactions == 0) Color.White else Color.Black
     ) { padding ->
-
-        AnimatedVisibility(
-            visible = transactions.isEmpty(),
-            enter = fadeIn() + slideInHorizontally(),
-            exit = fadeOut() + slideOutHorizontally()
+        BottomSheetScaffold(
+            modifier = Modifier
+                .padding(padding)
+                .systemBarsPadding(),
+            sheetContent = {
+               if(currentWeekData.transactions.isNotEmpty()){
+                   Row(
+                       modifier = Modifier
+                           .fillMaxWidth()
+                           .background(Color.White)
+                           .clickable {
+                               navigator.navigate(TallyTransactionsScreenDestination()) {
+                                   launchSingleTop = true
+                               }
+                           }
+                           .padding(all = 16.dp),
+                       horizontalArrangement = Arrangement.SpaceBetween,
+                       verticalAlignment = Alignment.CenterVertically
+                   ) {
+                       Text(
+                           text = "All Transactions",
+                           style = MaterialTheme.typography.body1.copy(fontWeight = FontWeight.Medium)
+                       )
+                       Icon(
+                           imageVector = Icons.Outlined.ChevronRight,
+                           contentDescription = ContentDescription.buttonAllTransactions
+                       )
+                   }
+                   LazyColumn {
+                       currentWeekData.transactions
+                           .groupBy { it.localDateTime.date }
+                           .forEach { (date, transactions) ->
+                               stickyHeader {
+                                   Text(
+                                       modifier = Modifier
+                                           .fillMaxWidth()
+                                           .background(Color.White)
+                                           .padding(horizontal = 16.dp, vertical = 12.dp),
+                                       text = DateFormatter(date),
+                                       color = DarkGray,
+                                       style = MaterialTheme.typography.subtitle2
+                                   )
+                                   Spacer(modifier = Modifier.height(4.dp))
+                               }
+                               items(transactions) { transaction ->
+                                   TransactionItem(
+                                       transaction = transaction,
+                                       onLongClick = {
+                                           navigator.navigate(
+                                               TallyManageTransactionScreenDestination(
+                                                   transactionId = transaction.transactionId
+                                               )
+                                           ) {
+                                               launchSingleTop = true
+                                           }
+                                       },
+                                       onClick = {},
+                                   )
+                               }
+                           }
+                   }
+               }
+            },
+            sheetPeekHeight = sheetPeekHeight,
+            sheetShape = RectangleShape,
         ) {
-            EmptyTransactionsLayout(
-                outstandingBalanceAmount = outstandingBalanceAmount,
-                repaymentAmount = repaymentAmount,
-                onWalletIconClicked = {
-                    navigator.navigate(TallyWalletScreenDestination) {
-                        launchSingleTop = true
+
+            if (totalTransactions == null) return@BottomSheetScaffold
+
+            if (totalTransactions == 0) {
+                EmptyTransactionsLayout(
+                    outstandingBalanceAmount = outstandingBalanceAmount,
+                    repaymentAmount = repaymentAmount,
+                    onWalletIconClicked = {
+                        navigator.navigate(TallyWalletScreenDestination) {
+                            launchSingleTop = true
+                        }
                     }
-                }
-            )
-        }
+                )
+                return@BottomSheetScaffold
+            }
 
-        AnimatedVisibility(
-            visible = transactions.isNotEmpty(),
-            enter = fadeIn() + slideInHorizontally(),
-            exit = fadeOut() + slideOutHorizontally()
-        ) {
-            LazyColumn {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .background(Color.Black)
-                            .padding(horizontal = 24.dp)
-                            .padding(top = 16.dp),
-                    ) {
-                        WalletIcon(color = Color.White, onClick = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 16.dp, bottom = 160.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    WalletIcon(
+                        color = Color.White,
+                        onClick = {
                             navigator.navigate(TallyWalletScreenDestination) {
                                 launchSingleTop = true
                             }
-                        })
+                        }
+                    )
+                    if (currentWeekData.transactions.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(24.dp))
                         Column(
                             modifier = Modifier
@@ -136,64 +230,73 @@ fun TallyDashboardScreen(
                         ) {
                             Text(text = "Spent this week", color = Color.White)
                             Text(
-                                text = "₹$spentThisWeek",
+                                text = "₹${currentWeekData.amountSpent}",
                                 color = Color.White,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 42.sp,
                                 fontFamily = fonts
                             )
                         }
-                        Spacer(modifier = Modifier.height(80.dp))
-                    }
-                }
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.White)
-                            .clickable { }
-                            .padding(all = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Last Transactions",
-                            style = MaterialTheme.typography.body1.copy(fontWeight = FontWeight.Medium)
-                        )
-                        Icon(
-                            imageVector = Icons.Outlined.ChevronRight,
-                            contentDescription = ContentDescription.buttonAllTransactions
-                        )
-                    }
-                }
-                transactions.groupBy { it.localDateTime.date }.forEach { (date, transactions) ->
-                    stickyHeader {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color.White)
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            text = DateFormatter(date),
-                            color = DarkGray,
-                            style = MaterialTheme.typography.subtitle2
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
-                    items(transactions) { transaction ->
-                        TransactionItem(
-                            transaction = transaction,
-                            onLongClick = {
-                                navigator.navigate(
-                                    TallyManageTransactionScreenDestination(
-                                        transactionId = transaction.transactionId
-                                    )
-                                ) {
-                                    launchSingleTop = true
+                    } else {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(
+                                16.dp,
+                                Alignment.CenterVertically
+                            )
+                        ) {
+                            Text(
+                                text = "A fresh new week",
+                                style = MaterialTheme.typography.h5,
+                                textAlign = TextAlign.Center,
+                                color = Color.White,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Click on the + button to record a\ntransaction on the go",
+                                style = MaterialTheme.typography.subtitle1,
+                                textAlign = TextAlign.Center,
+                                color = Color.White
+                            )
+                            OutlinedButton(
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    backgroundColor = Color.Black,
+                                    contentColor = Color.White
+                                ),
+                                border = BorderStroke(
+                                    width = ButtonDefaults.OutlinedBorderSize,
+                                    color = MaterialTheme.colors.primary
+                                ),
+                                shape = CircleShape,
+                                onClick = {
+                                    navigator.navigate(TallyTransactionsScreenDestination()) {
+                                        launchSingleTop = true
+                                    }
                                 }
-                            },
-                            onClick = {},
+                            ) {
+                                Text(text = "View All Transactions")
+                            }
+                        }
+                    }
+                }
+
+                if (currentWeekData.transactions.isEmpty()) {
+                    val resourceId by remember {
+                        mutableStateOf(
+                            listOf(
+                                R.drawable.illustration_women_feeding_cat,
+                                R.drawable.illustration_women_shopping_run,
+                                R.drawable.illustration_man_coffee_walking
+                            ).random()
                         )
                     }
+                    Image(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        painter = painterResource(id = resourceId),
+                        contentDescription = null
+                    )
                 }
             }
         }
@@ -201,76 +304,6 @@ fun TallyDashboardScreen(
 
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun TransactionItem(
-    transaction: TransactionDetail,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
-) {
-    requireNotNull(transaction.category)
-    requireNotNull(transaction.account)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .combinedClickable(onLongClick = onLongClick, onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(LightGray),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = transaction.category.emoji, fontSize = 16.sp)
-        }
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = transaction.category.name,
-                fontFamily = fonts,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black
-            )
-
-            val creditOrDebit = remember {
-                when (transaction.account.type) {
-                    AccountType.Cash -> {
-                        when (transaction.category.type) {
-                            CategoryType.Expense -> "Paid as"
-                            CategoryType.Income -> "Received as"
-                        }
-                    }
-                    else -> {
-                        when (transaction.category.type) {
-                            CategoryType.Expense -> "Debited from"
-                            CategoryType.Income -> "Credited to"
-                        }
-                    }
-                }
-
-            }
-            Text(
-                text = "$creditOrDebit ${transaction.account.name}",
-                fontFamily = fonts,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Normal,
-                color = DarkGray
-            )
-        }
-        Text(
-            text = "₹${transaction.amount}",
-            color = if (transaction.category.type == CategoryType.Income) MaterialTheme.colors.primary else Color.Black,
-            fontFamily = fonts,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-        )
-    }
-}
 
 @Composable
 fun EmptyTransactionsLayout(
@@ -304,7 +337,7 @@ fun EmptyTransactionsLayout(
             }
         }
         Image(
-            modifier = Modifier.padding(32.dp),
+            modifier = Modifier.padding(start = 32.dp, bottom = 16.dp),
             painter = painterResource(id = R.drawable.illustration_man_checks_phone),
             contentDescription = null,
             alignment = Alignment.BottomStart

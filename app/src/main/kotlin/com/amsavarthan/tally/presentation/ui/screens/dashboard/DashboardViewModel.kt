@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.amsavarthan.tally.domain.usecase.GetCurrentWeekTransactionsAndAmountSpent
 import com.amsavarthan.tally.domain.usecase.GetOnBoardingStatusUseCase
+import com.amsavarthan.tally.domain.usecase.GetTotalTransactionCount
 import com.amsavarthan.tally.domain.usecase.GetWalletAmountDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -20,6 +21,7 @@ class DashboardViewModel @Inject constructor(
     getOnBoardingStatusUseCase: GetOnBoardingStatusUseCase,
     getWalletAmountDetailUseCase: GetWalletAmountDetailUseCase,
     getCurrentWeekTransactionsAndAmountSpent: GetCurrentWeekTransactionsAndAmountSpent,
+    getTotalTransactionCount: GetTotalTransactionCount,
 ) : ViewModel() {
 
     val hasUserOnBoarded = getOnBoardingStatusUseCase().stateIn(
@@ -35,10 +37,15 @@ class DashboardViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             getCurrentWeekTransactionsAndAmountSpent().collectLatest { details ->
-                uiState = uiState.copy(
-                    transactions = details.transactions,
-                    spentThisWeek = details.amountSpent
-                )
+                uiState = uiState.copy(weekTransactionDetail = details)
+            }
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            getTotalTransactionCount().collectLatest { totalTransactions ->
+                uiState = uiState.copy(totalTransactions = totalTransactions)
             }
         }
     }
