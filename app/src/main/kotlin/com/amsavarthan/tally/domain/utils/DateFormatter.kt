@@ -4,10 +4,19 @@ import kotlinx.datetime.*
 
 object DateFormatter {
 
-    operator fun invoke(date: LocalDate): String {
+    operator fun invoke(date: LocalDate, forSearchQuery: Boolean = false): String {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
         val isToday = today == date
         val isYesterday = today.minus(DatePeriod(days = 1)) == date
+
+        if (forSearchQuery) {
+            val todayOrYesterday = when {
+                isToday -> "Today"
+                isYesterday -> "Yesterday"
+                else -> ""
+            }
+            return "${date.dayOfMonth} ${date.month.name} ${date.year} $date $todayOrYesterday"
+        }
 
         return when {
             isToday -> "Today"

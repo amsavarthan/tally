@@ -2,6 +2,8 @@ package com.amsavarthan.tally.presentation.utils
 
 
 object ContentDescription {
+    const val buttonClose = "button_close"
+    const val buttonSearch = "button_search"
     const val buttonAdd = "button_add"
     const val buttonDelete = "button_delete"
     const val buttonBack = "button_back"
