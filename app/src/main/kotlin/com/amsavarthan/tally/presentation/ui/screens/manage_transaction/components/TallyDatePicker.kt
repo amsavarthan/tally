@@ -43,9 +43,9 @@ fun TallyDatePicker(
             /* listener = */ { _, year, month, dayOfMonth ->
                 onDatePicked(LocalDateTime(LocalDate(year, month + 1, dayOfMonth), today.time))
             },
-            /* year = */ today.year,
-            /* monthOfYear = */ today.monthNumber - 1,
-            /* dayOfMonth = */ today.dayOfMonth
+            /* year = */ date.year,
+            /* monthOfYear = */ date.monthNumber - 1,
+            /* dayOfMonth = */ date.dayOfMonth
         ).apply {
             datePicker.maxDate = now.toEpochMilliseconds()
         }
@@ -55,9 +55,7 @@ fun TallyDatePicker(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(LightGray)
-            .clickable {
-                dialog.show()
-            }
+            .clickable(onClick = dialog::show)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)

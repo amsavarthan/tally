@@ -203,9 +203,7 @@ fun TallyManageTransactionScreen(
                         date = transactionDetails.localDateTime.date,
                         onDatePicked = { dateTime ->
                             viewModel.onEvent(
-                                TallyManageTransactionScreenEvent.OnDateChanged(
-                                    dateTime
-                                )
+                                TallyManageTransactionScreenEvent.OnDateChanged(dateTime)
                             )
                         }
                     )
