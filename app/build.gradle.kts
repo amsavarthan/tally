@@ -12,6 +12,8 @@ plugins {
     id("kotlin-parcelize")
     kotlin("plugin.serialization") version "1.5.30"
     id("com.google.protobuf") version "0.8.17"
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -51,14 +53,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            applicationIdSuffix = ".debug"
         }
-        create("staging"){
+        create("staging") {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            applicationIdSuffix = ".staging"
             isDebuggable = true
             signingConfig = signingConfigs.getByName("debug")
         }
@@ -127,6 +127,11 @@ dependencies {
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.0")
 
+    val firebaseBom = "31.2.0"
+    implementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+
     //Unit Test
     testImplementation("com.google.truth:truth:1.1.3")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
@@ -172,5 +177,5 @@ kapt {
 }
 
 ksp {
-    arg("room.schemaLocation","$projectDir/schemas")
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
