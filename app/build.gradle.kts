@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.google.protobuf.gradle.generateProtoTasks
 import com.google.protobuf.gradle.plugins
 import com.google.protobuf.gradle.protobuf
@@ -16,7 +17,17 @@ plugins {
     id("com.google.firebase.crashlytics")
 }
 
+
 android {
+    signingConfigs {
+        create("release") {
+            val properties = gradleLocalProperties(file("../"))
+            storeFile = file(properties.getProperty("RELEASE_STORE_FILE"))
+            storePassword = properties.getProperty("RELEASE_STORE_PASSWORD")
+            keyAlias = properties.getProperty("RELEASE_KEY_ALIAS")
+            keyPassword = properties.getProperty("RELEASE_KEY_PASSWORD")
+        }
+    }
     namespace = "com.amsavarthan.tally"
     compileSdk = 33
     testBuildType = "staging"
@@ -44,6 +55,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isDebuggable = true
