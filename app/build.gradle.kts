@@ -8,7 +8,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("kapt")
-    id("com.google.devtools.ksp") version "1.7.20-1.0.7"
+    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
     kotlin("plugin.serialization") version "1.5.30"
@@ -106,7 +106,7 @@ android {
 
 dependencies {
 
-    val composeBom = platform("androidx.compose:compose-bom:2022.12.00")
+    val composeBom = platform("androidx.compose:compose-bom:2023.01.00")
     implementation(composeBom)
 
     implementation("androidx.compose.ui:ui")
@@ -116,7 +116,7 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
-    implementation("com.google.android.material:material:1.7.0")
+    implementation("com.google.android.material:material:1.8.0")
 
     implementation("androidx.core:core-splashscreen:1.0.0")
 
