@@ -51,7 +51,6 @@ data class TallyManageTransactionScreenNavArgs(
     val transactionId: Long? = null,
 )
 
-@OptIn(FlowPreview::class)
 @Destination(
     navArgsDelegate = TallyManageTransactionScreenNavArgs::class
 )
@@ -253,7 +252,7 @@ fun TallyManageTransactionScreen(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight(),
-                        emoji = transactionDetails.category?.emoji ?: "💸",
+                        emoji = transactionDetails.category?.emoji ?: "🧐",
                         value = transactionDetails.category?.name ?: "Reason",
                         onClick = {
                             navigator.navigate(
