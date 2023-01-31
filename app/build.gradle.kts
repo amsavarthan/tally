@@ -36,7 +36,7 @@ android {
         applicationId = "com.amsavarthan.tally"
         minSdk = 21
         targetSdk = 33
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0.1"
 
         testInstrumentationRunner = "com.amsavarthan.tally.TallyTestRunner"
