@@ -36,8 +36,8 @@ android {
         applicationId = "com.amsavarthan.tally"
         minSdk = 21
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "com.amsavarthan.tally.TallyTestRunner"
         vectorDrawables {
@@ -137,7 +137,7 @@ dependencies {
     kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.0")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.2")
 
     val firebaseBom = "31.2.0"
     implementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))

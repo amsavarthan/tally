@@ -26,7 +26,7 @@ data class DebitCardDetails(
 fun DebitCardDetails.toAccount(): Account {
     return Account(
         name = name,
-        balance = if (outstandingBalance.isEmpty()) 0.0 else outstandingBalance.toDouble(),
+        balance = outstandingBalance.toDoubleOrNull() ?: 0.0,
         type = AccountType.DebitCard
     )
 }
@@ -41,8 +41,8 @@ data class CreditDetails(
 fun CreditDetails.toAccount(type: AccountType): Account {
     return Account(
         name = name,
-        balance = if (outstandingAmount.isEmpty()) 0.0 else outstandingAmount.toDouble(),
-        limit = creditLimit.toDouble(),
+        balance = outstandingAmount.toDoubleOrNull() ?: 0.0,
+        limit = creditLimit.toDoubleOrNull() ?: 0.0,
         type = type
     )
 }
