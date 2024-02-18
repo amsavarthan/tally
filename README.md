@@ -1,15 +1,12 @@
-![Github Preview Image](https://github.com/amsavarthan/tally/blob/main/art/Banner.png?raw=true)
+[![GitHub license](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![ktlint](https://img.shields.io/badge/code%20style-%E2%9D%A4-FF4081.svg)](https://ktlint.github.io/)
 
 # Tally 💸
-A Minimal Expense Tracker built to demonstrate the use of modern android architecture component with Clean Architecture.
-
-<br />
+A minimal expense tracker built to demonstrate the use of modern android architecture component with Clean Architecture, primarily developed to explore on Complex Room Implementations
 
 ***Get the latest Tally app from Playstore 👇***
 
 [![Tally](https://img.shields.io/badge/Tally-PLAYSTORE-black.svg?style=for-the-badge&logo=android)](https://play.google.com/store/apps/details?id=com.amsavarthan.tally)
-
-<br />
 
 ## UI Design 🎨
 
@@ -17,15 +14,10 @@ A Minimal Expense Tracker built to demonstrate the use of modern android archite
 
 [![Tally](https://img.shields.io/badge/Tally-FIGMA-black.svg?style=for-the-badge&logo=figma)](https://www.figma.com/file/l1qN1GnbMnI5LUymuIImAE/Tally?node-id=0%3A1&t=gevji5o4Ihh9gfk4-1)
 
-<br />
-
 ## Screenshots 📸
 Dashboard | Add Transaction | Wallet | Choose Account
 --- | --- | --- |---
 ![](https://github.com/amsavarthan/tally/blob/main/art/Dashboard.png)|![](https://github.com/amsavarthan/tally/blob/main/art/Add-Edit-Transaction.png)|![](https://github.com/amsavarthan/tally/blob/main/art/Wallet-Screen.png)|![](https://github.com/amsavarthan/tally/blob/main/art/Choose-Account.png)|
-
-<br />
-
 
 ## Built With 🛠
 - [Kotlin](https://kotlinlang.org/) - First class and official programming language for Android development.
@@ -39,8 +31,6 @@ Dashboard | Add Transaction | Wallet | Choose Account
   - [DataStore](https://developer.android.com/topic/libraries/architecture/datastore) - Jetpack DataStore is a data storage solution that allows you to store key-value pairs or typed objects with protocol buffers. DataStore uses Kotlin coroutines and Flow to store data asynchronously, consistently, and transactionally.
 - [Material Components for Android](https://github.com/material-components/material-components-android) - Modular and customizable Material Design UI components for Android.
 - [Figma](https://figma.com/) - Figma is a vector graphics editor and prototyping tool which is primarily web-based.
-
-<br />
 
 ## Package Structure 📦
     
@@ -66,13 +56,9 @@ Dashboard | Add Transaction | Wallet | Choose Account
         └── utils
 
 
-<br />
-
 ## 🧰 Build-tool
 
 - [Android Studio Dolphin 2021.3.1 or above](https://developer.android.com/studio)
-
-<br />
 
 ## 📩 Contact
 
@@ -80,8 +66,6 @@ DM me at 👇
 
 * Twitter: <a href="https://twitter.com/lvamsavarthan" target="_blank">@lvamsavarthan</a>
 * Email: amsavarthan.a@gmail.com
-
-<br />
 
 ## License 🔖
 ```
