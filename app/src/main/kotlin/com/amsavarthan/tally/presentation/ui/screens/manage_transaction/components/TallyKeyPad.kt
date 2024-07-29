@@ -55,14 +55,14 @@ fun TallyKeyPad(
                             contentDescription = ContentDescription.buttonKeyBackspace,
                             tint = Color.Black
                         )
-                        return@Box
+                    } else {
+                        Text(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = key.label,
+                            style = MaterialTheme.typography.h5,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
-                    Text(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = key.label,
-                        style = MaterialTheme.typography.h5,
-                        fontWeight = FontWeight.Medium
-                    )
                 }
             }
         }

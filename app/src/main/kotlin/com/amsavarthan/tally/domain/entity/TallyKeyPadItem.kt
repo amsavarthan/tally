@@ -3,18 +3,18 @@ package com.amsavarthan.tally.domain.entity
 sealed class TallyKeyPadItem(
     val label: String,
 ) {
-    object Key1 : TallyKeyPadItem("1")
-    object Key2 : TallyKeyPadItem("2")
-    object Key3 : TallyKeyPadItem("3")
-    object Key4 : TallyKeyPadItem("4")
-    object Key5 : TallyKeyPadItem("5")
-    object Key6 : TallyKeyPadItem("6")
-    object Key7 : TallyKeyPadItem("7")
-    object Key8 : TallyKeyPadItem("8")
-    object Key9 : TallyKeyPadItem("9")
-    object KeyDot : TallyKeyPadItem(".")
-    object Key0 : TallyKeyPadItem("0")
-    object KeyBackspace : TallyKeyPadItem("backspace")
+    data object Key1 : TallyKeyPadItem("1")
+    data object Key2 : TallyKeyPadItem("2")
+    data object Key3 : TallyKeyPadItem("3")
+    data object Key4 : TallyKeyPadItem("4")
+    data object Key5 : TallyKeyPadItem("5")
+    data object Key6 : TallyKeyPadItem("6")
+    data object Key7 : TallyKeyPadItem("7")
+    data object Key8 : TallyKeyPadItem("8")
+    data object Key9 : TallyKeyPadItem("9")
+    data object KeyDot : TallyKeyPadItem(".")
+    data object Key0 : TallyKeyPadItem("0")
+    data object KeyBackspace : TallyKeyPadItem("backspace")
 
     companion object {
         fun getAllKeys() = listOf(

@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.twotone.ArrowRightAlt
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.twotone.AccountBalanceWallet
-import androidx.compose.material.icons.twotone.ArrowRightAlt
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,6 +79,7 @@ fun TallyManageTransactionScreen(
                 is ManageTransactionScreenViewModel.UiEvent.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
+
                 ManageTransactionScreenViewModel.UiEvent.NavigateBack -> {
                     navigator.navigateUp()
                 }
@@ -118,7 +119,7 @@ fun TallyManageTransactionScreen(
                 navigationIcon = {
                     IconButton(onClick = navigator::navigateUp) {
                         Icon(
-                            imageVector = Icons.Outlined.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = ContentDescription.buttonBack
                         )
                     }
@@ -149,6 +150,7 @@ fun TallyManageTransactionScreen(
         Column(
             modifier = Modifier
                 .padding(padding)
+                .consumeWindowInsets(padding)
                 .fillMaxSize(),
         ) {
             Column(
@@ -176,7 +178,7 @@ fun TallyManageTransactionScreen(
 
                     Row(
                         modifier = Modifier.clickable(
-                            interactionSource = MutableInteractionSource(),
+                            interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                             onClick = focusManager::clearFocus
                         ),
@@ -245,7 +247,7 @@ fun TallyManageTransactionScreen(
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
                             .rotate(degree),
-                        imageVector = Icons.TwoTone.ArrowRightAlt,
+                        imageVector = Icons.AutoMirrored.TwoTone.ArrowRightAlt,
                         contentDescription = null
                     )
                     ChooserItem(

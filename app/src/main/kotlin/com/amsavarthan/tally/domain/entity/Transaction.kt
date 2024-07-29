@@ -2,7 +2,7 @@ package com.amsavarthan.tally.domain.entity
 
 import android.os.Parcelable
 import androidx.room.*
-import androidx.room.ForeignKey.CASCADE
+import androidx.room.ForeignKey.Companion.CASCADE
 import com.amsavarthan.tally.domain.utils.LocalDateTimeParceler
 import com.amsavarthan.tally.domain.utils.TransactionType
 import kotlinx.datetime.LocalDateTime

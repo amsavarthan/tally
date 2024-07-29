@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.twotone.AccountBalanceWallet
 import androidx.compose.material.icons.twotone.CreditCard
 import androidx.compose.runtime.Composable
@@ -67,7 +67,7 @@ fun TallyAccountsScreen(
                 navigationIcon = {
                     IconButton(onClick = navigator::navigateUp) {
                         Icon(
-                            imageVector = Icons.Outlined.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = ContentDescription.buttonBack
                         )
                     }
@@ -76,6 +76,9 @@ fun TallyAccountsScreen(
         }
     ) { padding ->
         LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .consumeWindowInsets(padding),
             state = lazyListState,
             contentPadding = PaddingValues(
                 start = 24.dp,

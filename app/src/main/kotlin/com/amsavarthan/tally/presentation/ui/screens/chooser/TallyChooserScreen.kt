@@ -10,8 +10,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +64,7 @@ fun TallyChooserScreen(
                 navigationIcon = {
                     IconButton(onClick = resultNavigator::navigateBack) {
                         Icon(
-                            imageVector = Icons.Outlined.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = ContentDescription.buttonBack
                         )
                     }
@@ -72,7 +72,11 @@ fun TallyChooserScreen(
             )
         },
     ) { padding ->
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .consumeWindowInsets(padding),
+        ) {
             when (chooserType) {
                 ChooserType.Account -> {
                     //We don't need Cash Type which is the first element in the list
