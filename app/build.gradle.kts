@@ -1,43 +1,28 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-import com.google.protobuf.gradle.generateProtoTasks
-import com.google.protobuf.gradle.plugins
-import com.google.protobuf.gradle.protobuf
-import com.google.protobuf.gradle.protoc
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("kapt")
-    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
+    id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
     kotlin("plugin.serialization") version "1.5.30"
-    id("com.google.protobuf") version "0.8.17"
+    id("com.google.protobuf") version "0.9.4"
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
 
 
 android {
-    signingConfigs {
-        create("release") {
-            val properties = gradleLocalProperties(file("../"))
-            storeFile = file(properties.getProperty("RELEASE_STORE_FILE"))
-            storePassword = properties.getProperty("RELEASE_STORE_PASSWORD")
-            keyAlias = properties.getProperty("RELEASE_KEY_ALIAS")
-            keyPassword = properties.getProperty("RELEASE_KEY_PASSWORD")
-        }
-    }
     namespace = "com.amsavarthan.tally"
-    compileSdk = 33
+    compileSdk = 34
     testBuildType = "staging"
 
     defaultConfig {
         applicationId = "com.amsavarthan.tally"
         minSdk = 21
-        targetSdk = 33
-        versionCode = 3
-        versionName = "1.0.1"
+        targetSdk = 34
+        versionCode = 4
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "com.amsavarthan.tally.TallyTestRunner"
         vectorDrawables {
@@ -55,7 +40,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isDebuggable = true
@@ -97,7 +81,7 @@ android {
         val composeVersion = rootProject.extra.get("compose_version") as String
         kotlinCompilerExtensionVersion = composeVersion
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
         }
@@ -114,17 +98,17 @@ dependencies {
     implementation("androidx.compose.material:material")
     implementation("androidx.compose.material:material-icons-extended")
 
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
-    implementation("com.google.android.material:material:1.8.0")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("com.google.android.material:material:1.12.0")
 
-    implementation("androidx.core:core-splashscreen:1.0.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
-    val composeDestinationVersion = "1.7.27-beta"
+    val composeDestinationVersion = "1.10.0"
     implementation("io.github.raamcosta.compose-destinations:animations-core:$composeDestinationVersion")
     ksp("io.github.raamcosta.compose-destinations:ksp:$composeDestinationVersion")
 
-    val roomVersion = "2.4.3"
+    val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
@@ -132,14 +116,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
-    val hiltVersion = "2.44"
+    val hiltVersion = "2.49"
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.2")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    val firebaseBom = "31.2.0"
+    val firebaseBom = "33.1.2"
     implementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
     implementation("com.google.firebase:firebase-crashlytics-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
@@ -149,10 +133,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
 
     //Instrumented Test
-    androidTestImplementation("androidx.test:core-ktx:1.5.0")
-    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:core-ktx:1.6.1")
+    androidTestImplementation("androidx.test:runner:1.6.1")
     androidTestImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("com.google.truth:truth:1.1.3")
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
 
@@ -161,8 +145,8 @@ dependencies {
     kaptAndroidTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
 
     //Datastore
-    implementation("androidx.datastore:datastore:1.0.0")
-    implementation("com.google.protobuf:protobuf-javalite:3.21.12")
+    implementation("androidx.datastore:datastore:1.1.1")
+    implementation("com.google.protobuf:protobuf-javalite:3.24.4")
 
     androidTestImplementation(composeBom)
     debugImplementation("androidx.compose.ui:ui-tooling")
